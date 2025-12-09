@@ -1,36 +1,149 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PranaMesh AQI Dashboard
+
+Real-time air quality monitoring dashboard for AICTE Delhi and the NCR region, developed by Team Optivis for Smart India Hackathon 2025.
+
+![PranaMesh Dashboard](public/images/hero-light.webp)
+
+## Features
+
+- 🌍 **Real-time AQI Monitoring** - Live data from 30+ stations across Delhi-NCR
+- 🗺️ **Interactive Map** - Google Maps integration with station markers and boundary visualization
+- 📊 **Data Analytics** - Historical trends, pollutant breakdowns, and traffic analysis
+- 🌓 **Dark/Light Theme** - Seamless theme switching with system preference detection
+- 📱 **Responsive Design** - Optimized for desktop, tablet, and mobile devices
+- 🔒 **Secure** - Security headers, CORS configuration, and environment-based secrets
+
+## Tech Stack
+
+- **Framework**: Next.js 16 with App Router
+- **Language**: TypeScript 5
+- **Styling**: Tailwind CSS 4
+- **UI Components**: Lucide React, Material Symbols
+- **Maps**: Google Maps JavaScript API, React Google Maps
+- **Charts**: Chart.js, React-Chartjs-2
+- **Data Sources**: CPCB Open Data API
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ 
+- npm or yarn
+- Google Maps API key (for mapping features)
+- CPCB API key (for live AQI data)
+
+### Environment Setup
+
+1. Copy the environment example file:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Fill in your API keys in `.env.local`:
+   ```env
+   CPCB_API_KEY=your_cpcb_api_key_here
+   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   ```
+
+### Installation
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes (AQI, buses)
+│   ├── mapping/           # Map view page
+│   ├── timestamp/         # Historical data page
+│   ├── trafficdata/       # Traffic analysis page
+│   └── layout.tsx         # Root layout with header/footer
+├── components/            # React components
+│   ├── AQIHeroDisplay.tsx # Homepage hero section
+│   ├── AQIMap.tsx         # Google Maps component
+│   ├── Header.tsx         # Navigation header
+│   └── Footer.tsx         # Page footer
+├── lib/                   # Backend services
+│   ├── aqi-service.ts     # AQI data fetching
+│   └── bus-service.ts     # Bus route data
+├── data/                  # Static data files
+├── types/                 # TypeScript type definitions
+└── utils/                 # Utility functions
+```
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+### Vercel (Recommended)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Connect your repository to Vercel
+2. Add environment variables in the Vercel dashboard
+3. Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Docker
 
-## Deploy on Vercel
+```bash
+# Build the image
+docker build -t pranamesh-dashboard .
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Run the container
+docker run -p 3000:3000 pranamesh-dashboard
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/aqi` | GET | Returns real-time AQI data for all stations |
+| `/api/aqi?refresh=true` | GET | Forces data refresh bypassing cache |
+| `/api/buses` | GET | Returns bus positions and routes |
+
+## Configuration
+
+### Security Headers
+
+The application includes the following security headers (configured in `next.config.ts`):
+- X-Frame-Options: DENY
+- X-Content-Type-Options: nosniff
+- Referrer-Policy: strict-origin-when-cross-origin
+- X-XSS-Protection: 1; mode=block
+
+### Caching
+
+- AQI data is cached for 5 minutes
+- Static assets use long-term caching
+- API responses include proper cache headers
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run `npm run lint` to check for issues
+5. Submit a pull request
+
+## License
+
+This project is developed for Smart India Hackathon 2025 by Team Optivis.
+
+## Acknowledgments
+
+- Central Pollution Control Board (CPCB) for open data APIs
+- Delhi Pollution Control Committee (DPCC)
+- Haryana State Pollution Control Board (HSPCB)
+- SAFAR India for air quality research

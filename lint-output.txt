@@ -1,0 +1,234 @@
+
+D:\Code\Vibe\pranamesh-dashboard\src\app\layout.tsx
+  73:17  warning  Custom fonts not added in `pages/_document.js` will only load for a single page. This is discouraged. See: https://nextjs.org/docs/messages/no-page-custom-font  @next/next/no-page-custom-font
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\AQIMap.tsx
+  74:19  error  Component definition is missing display name  react/display-name
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\AnimatedNumber.tsx
+  103:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\AnimatedNumber.tsx:103:13
+  101 |         if (hasAnimated) {
+  102 |             // Re-animate when value changes
+> 103 |             startAnimation();
+      |             ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  104 |         } else {
+  105 |             // Update static value if animation hasn't triggered yet
+  106 |             setDisplayValue(value);  react-hooks/set-state-in-effect
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\FirebaseAQIProvider.tsx
+  110:25  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\FirebaseAQIProvider.tsx:110:25
+  108 |
+  109 |     useEffect(() => {
+> 110 |         const cleanup = initializeConnection();
+      |                         ^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  111 |         return () => {
+  112 |             if (cleanup) cleanup();
+  113 |         };  react-hooks/set-state-in-effect
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx
+  202:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:202:26
+  200 |                     </div>
+  201 |                     <div className="grid grid-cols-3 gap-2">
+> 202 |                         <StatCard label="Current" value={station1.currentAqi} color="#6366f1" />
+      |                          ^^^^^^^^ This component is created during render
+  203 |                         <StatCard label="Avg" value={stats.station1.avg} color="#6366f1" trend={stats.station1.trend} />
+  204 |                         <StatCard label="Peak" value={stats.station1.max} color="#ef4444" />
+  205 |                     </div>
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:168:22
+  166 |     };
+  167 |
+> 168 |     const StatCard = ({ label, value, color, trend }: { label: string; value: number; color: string; trend?: number }) => (
+      |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 169 |         <div className="text-center">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 170 |             <p className="text-xs text-text-muted-light dark:text-text-muted mb-1">{label}</p>
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 180 |         </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 181 |     );
+      | ^^^^^^ The component is created during render here
+  182 |
+  183 |     return (
+  184 |         <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-6 sm:p-8">  react-hooks/static-components
+  203:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:203:26
+  201 |                     <div className="grid grid-cols-3 gap-2">
+  202 |                         <StatCard label="Current" value={station1.currentAqi} color="#6366f1" />
+> 203 |                         <StatCard label="Avg" value={stats.station1.avg} color="#6366f1" trend={stats.station1.trend} />
+      |                          ^^^^^^^^ This component is created during render
+  204 |                         <StatCard label="Peak" value={stats.station1.max} color="#ef4444" />
+  205 |                     </div>
+  206 |                 </div>
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:168:22
+  166 |     };
+  167 |
+> 168 |     const StatCard = ({ label, value, color, trend }: { label: string; value: number; color: string; trend?: number }) => (
+      |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 169 |         <div className="text-center">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 170 |             <p className="text-xs text-text-muted-light dark:text-text-muted mb-1">{label}</p>
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 180 |         </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 181 |     );
+      | ^^^^^^ The component is created during render here
+  182 |
+  183 |     return (
+  184 |         <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-6 sm:p-8">      react-hooks/static-components
+  204:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:204:26
+  202 |                         <StatCard label="Current" value={station1.currentAqi} color="#6366f1" />
+  203 |                         <StatCard label="Avg" value={stats.station1.avg} color="#6366f1" trend={stats.station1.trend} />
+> 204 |                         <StatCard label="Peak" value={stats.station1.max} color="#ef4444" />
+      |                          ^^^^^^^^ This component is created during render
+  205 |                     </div>
+  206 |                 </div>
+  207 |
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:168:22
+  166 |     };
+  167 |
+> 168 |     const StatCard = ({ label, value, color, trend }: { label: string; value: number; color: string; trend?: number }) => (
+      |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 169 |         <div className="text-center">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 170 |             <p className="text-xs text-text-muted-light dark:text-text-muted mb-1">{label}</p>
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 180 |         </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 181 |     );
+      | ^^^^^^ The component is created during render here
+  182 |
+  183 |     return (
+  184 |         <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-6 sm:p-8">                                                                   react-hooks/static-components
+  215:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:215:26
+  213 |                     </div>
+  214 |                     <div className="grid grid-cols-3 gap-2">
+> 215 |                         <StatCard label="Current" value={station2.currentAqi} color="#ec4899" />
+      |                          ^^^^^^^^ This component is created during render
+  216 |                         <StatCard label="Avg" value={stats.station2.avg} color="#ec4899" trend={stats.station2.trend} />
+  217 |                         <StatCard label="Peak" value={stats.station2.max} color="#ef4444" />
+  218 |                     </div>
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:168:22
+  166 |     };
+  167 |
+> 168 |     const StatCard = ({ label, value, color, trend }: { label: string; value: number; color: string; trend?: number }) => (
+      |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 169 |         <div className="text-center">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 170 |             <p className="text-xs text-text-muted-light dark:text-text-muted mb-1">{label}</p>
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 180 |         </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 181 |     );
+      | ^^^^^^ The component is created during render here
+  182 |
+  183 |     return (
+  184 |         <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-6 sm:p-8">  react-hooks/static-components
+  216:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:216:26
+  214 |                     <div className="grid grid-cols-3 gap-2">
+  215 |                         <StatCard label="Current" value={station2.currentAqi} color="#ec4899" />
+> 216 |                         <StatCard label="Avg" value={stats.station2.avg} color="#ec4899" trend={stats.station2.trend} />
+      |                          ^^^^^^^^ This component is created during render
+  217 |                         <StatCard label="Peak" value={stats.station2.max} color="#ef4444" />
+  218 |                     </div>
+  219 |                 </div>
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:168:22
+  166 |     };
+  167 |
+> 168 |     const StatCard = ({ label, value, color, trend }: { label: string; value: number; color: string; trend?: number }) => (
+      |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 169 |         <div className="text-center">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 170 |             <p className="text-xs text-text-muted-light dark:text-text-muted mb-1">{label}</p>
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 180 |         </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 181 |     );
+      | ^^^^^^ The component is created during render here
+  182 |
+  183 |     return (
+  184 |         <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-6 sm:p-8">      react-hooks/static-components
+  217:26  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:217:26
+  215 |                         <StatCard label="Current" value={station2.currentAqi} color="#ec4899" />
+  216 |                         <StatCard label="Avg" value={stats.station2.avg} color="#ec4899" trend={stats.station2.trend} />
+> 217 |                         <StatCard label="Peak" value={stats.station2.max} color="#ef4444" />
+      |                          ^^^^^^^^ This component is created during render
+  218 |                     </div>
+  219 |                 </div>
+  220 |             </div>
+
+D:\Code\Vibe\pranamesh-dashboard\src\components\StationComparison.tsx:168:22
+  166 |     };
+  167 |
+> 168 |     const StatCard = ({ label, value, color, trend }: { label: string; value: number; color: string; trend?: number }) => (
+      |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 169 |         <div className="text-center">
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 170 |             <p className="text-xs text-text-muted-light dark:text-text-muted mb-1">{label}</p>
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 180 |         </div>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 181 |     );
+      | ^^^^^^ The component is created during render here
+  182 |
+  183 |     return (
+  184 |         <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-6 sm:p-8">                                                react-hooks/static-components
+
+D:\Code\Vibe\pranamesh-dashboard\src\lib\firestore-aqi-service.ts
+  10:5   warning  'updateDoc' is defined but never used  @typescript-eslint/no-unused-vars
+  20:20  warning  'get' is defined but never used        @typescript-eslint/no-unused-vars
+
+D:\Code\Vibe\pranamesh-dashboard\src\lib\historical-api.ts
+  8:30  warning  'WAQIResponse' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 13 problems (9 errors, 4 warnings)
+
