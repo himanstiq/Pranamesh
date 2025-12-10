@@ -12,27 +12,27 @@ export default function CapabilitiesSection() {
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4 p-0">
-        <div className="flex flex-1 gap-4 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 flex-col">
-          <div className="text-primary-light-theme dark:text-primary">
-            <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>map</span>
+        <div className="flex flex-1 gap-4 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 flex-col hover-lift hover-border-glow transition-all duration-300 cursor-pointer group">
+          <div className="text-primary-light-theme dark:text-primary icon-wiggle-hover">
+            <span className="material-symbols-outlined group-hover:scale-110 transition-transform duration-300" style={{ fontSize: '32px' }}>map</span>
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-text-dark dark:text-white text-lg font-bold leading-tight">Live Geospatial Mapping</h2>
             <p className="text-text-muted-light dark:text-text-muted text-sm font-normal leading-normal">Visualizing AQI data across locations in real-time.</p>
           </div>
         </div>
-        <div className="flex flex-1 gap-4 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 flex-col">
-          <div className="text-primary-light-theme dark:text-warm-orange">
-            <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>traffic</span>
+        <div className="flex flex-1 gap-4 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 flex-col hover-lift hover-border-glow transition-all duration-300 cursor-pointer group">
+          <div className="text-primary-light-theme dark:text-warm-orange icon-wiggle-hover">
+            <span className="material-symbols-outlined group-hover:scale-110 transition-transform duration-300" style={{ fontSize: '32px' }}>traffic</span>
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-text-dark dark:text-white text-lg font-bold leading-tight">Traffic Correlation</h2>
             <p className="text-text-muted-light dark:text-text-muted text-sm font-normal leading-normal">Analyzing the impact of traffic patterns on air quality.</p>
           </div>
         </div>
-        <div className="flex flex-1 gap-4 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 flex-col">
-          <div className="text-primary-light-theme dark:text-primary-light">
-            <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>history</span>
+        <div className="flex flex-1 gap-4 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 flex-col hover-lift hover-border-glow transition-all duration-300 cursor-pointer group">
+          <div className="text-primary-light-theme dark:text-primary-light icon-wiggle-hover">
+            <span className="material-symbols-outlined group-hover:scale-110 transition-transform duration-300" style={{ fontSize: '32px' }}>history</span>
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-text-dark dark:text-white text-lg font-bold leading-tight">Historical Data Analysis</h2>
@@ -43,3 +43,4 @@ export default function CapabilitiesSection() {
     </div>
   );
 }
+

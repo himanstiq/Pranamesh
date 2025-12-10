@@ -23,7 +23,8 @@ export default function ForecastSection() {
                             {forecastData.map((item, index) => (
                                 <div
                                     key={index}
-                                    className="flex flex-col items-center gap-3 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-4 text-center hover:shadow-lg transition-shadow duration-300"
+                                    className={`flex flex-col items-center gap-3 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-4 text-center hover-lift hover-glow transition-all duration-300 stagger-${index + 1}`}
+                                    style={{ animationFillMode: 'backwards' }}
                                 >
                                     <p className="text-sm font-medium text-text-muted-light dark:text-text-muted">{item.label}</p>
                                     <p className="text-3xl font-bold text-aqi-poor">

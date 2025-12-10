@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Upload, AlertCircle, CheckCircle, Loader2, Plus, RefreshCw, Database } from 'lucide-react';
+import { BarChart3, Upload, AlertCircle, CheckCircle, Loader2, Plus, RefreshCw, Database, ToggleLeft, ToggleRight, Info } from 'lucide-react';
 import { updateAQIData, saveStationMetadata, getAllStations } from '@/lib/firestore-aqi-service';
 import { initializeSampleData } from '@/lib/firebase-aqi-service';
 import { isFirebaseConfigured, getFirebaseDatabase } from '@/lib/firebase';
+import { useSystemSettings } from '@/lib/SystemSettingsContext';
 import { aqiStations as mockStations } from '@/data/mock-data';
 import { ref, set } from 'firebase/database';
 
@@ -64,6 +65,89 @@ interface StationOption {
         so2?: number;
         o3?: number;
     };
+}
+
+// Manual Mode Toggle Component
+function ManualModeToggle() {
+    const { settings, isLoading, setManualMode } = useSystemSettings();
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const handleToggle = async () => {
+        setIsUpdating(true);
+        await setManualMode(!settings.manualMode);
+        setIsUpdating(false);
+    };
+
+    return (
+        <div className={`mb-6 p-5 rounded-xl border-2 transition-all ${settings.manualMode
+            ? 'bg-amber-500/10 border-amber-500/50 dark:bg-amber-500/20'
+            : 'bg-green-500/10 border-green-500/50 dark:bg-green-500/20'
+            }`}>
+            <div className="flex items-start md:items-center justify-between gap-4 flex-col md:flex-row">
+                <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded-lg ${settings.manualMode ? 'bg-amber-500/20' : 'bg-green-500/20'}`}>
+                        {settings.manualMode ? (
+                            <ToggleRight className="w-6 h-6 text-amber-500" />
+                        ) : (
+                            <ToggleLeft className="w-6 h-6 text-green-500" />
+                        )}
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-text-dark dark:text-text-light flex items-center gap-2">
+                            Manual Mode
+                            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                        </h3>
+                        <p className="text-sm text-text-muted-light dark:text-text-muted mt-1">
+                            {settings.manualMode ? (
+                                <>
+                                    <span className="font-medium text-amber-600 dark:text-amber-400">Active:</span> Website displays Firebase data from your hardware sensors
+                                </>
+                            ) : (
+                                <>
+                                    <span className="font-medium text-green-600 dark:text-green-400">Inactive:</span> Website displays accurate real-time WAQI API data
+                                </>
+                            )}
+                        </p>
+                    </div>
+                </div>
+                <button
+                    onClick={handleToggle}
+                    disabled={isLoading || isUpdating}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all disabled:opacity-50 ${settings.manualMode
+                        ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                        : 'bg-green-500 hover:bg-green-600 text-white'
+                        }`}
+                >
+                    {isUpdating ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : settings.manualMode ? (
+                        <ToggleRight className="w-4 h-4" />
+                    ) : (
+                        <ToggleLeft className="w-4 h-4" />
+                    )}
+                    {settings.manualMode ? 'Turn OFF' : 'Turn ON'}
+                </button>
+            </div>
+
+            {/* Info box */}
+            <div className="mt-4 p-3 rounded-lg bg-black/5 dark:bg-white/5 flex items-start gap-2">
+                <Info className="w-4 h-4 text-text-muted-light dark:text-text-muted mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-text-muted-light dark:text-text-muted">
+                    {settings.manualMode ? (
+                        <>
+                            Data entered via this admin panel will be displayed across all pages.
+                            Toggle OFF to show accurate real-time AQI data from official sources.
+                        </>
+                    ) : (
+                        <>
+                            The website is showing live AQI data from the WAQI API.
+                            Toggle ON to use data from your hardware sensors or manual entries.
+                        </>
+                    )}
+                </p>
+            </div>
+        </div>
+    );
 }
 
 export default function AQIDataEntry() {
@@ -128,11 +212,13 @@ export default function AQIDataEntry() {
 
     const loadStations = async (firebaseConfigured: boolean) => {
         setIsLoadingStations(true);
+        console.log('[Admin] loadStations called, firebaseConfigured:', firebaseConfigured);
 
         // Start with mock stations (always available)
         const stationMap = new Map<string, StationOption>();
 
         // Add all mock stations first
+        console.log('[Admin] Loading mock stations, count:', mockStations.length);
         mockStations.forEach(station => {
             stationMap.set(station.id, {
                 id: station.id,
@@ -148,7 +234,9 @@ export default function AQIDataEntry() {
 
         // If Firebase is configured, also fetch Firebase stations and merge
         if (firebaseConfigured) {
+            console.log('[Admin] Fetching Firebase stations...');
             const result = await getAllStations();
+            console.log('[Admin] Firebase stations result:', result);
             if (result.success && result.data) {
                 result.data.forEach(station => {
                     stationMap.set(station.id, {
@@ -168,6 +256,7 @@ export default function AQIDataEntry() {
             a.name.localeCompare(b.name)
         );
 
+        console.log('[Admin] Final stations loaded:', stations.length);
         setExistingStations(stations);
         setIsLoadingStations(false);
     };
@@ -327,29 +416,21 @@ export default function AQIDataEntry() {
         return '#7e0023';
     };
 
-    if (!isConfigured) {
-        return (
-            <div className="p-6 max-w-3xl mx-auto">
-                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-8 text-center">
-                    <AlertCircle className="w-12 h-12 mx-auto text-warm-orange mb-4" />
-                    <h2 className="text-xl font-bold text-text-dark dark:text-text-light mb-2">Firebase Not Configured</h2>
-                    <p className="text-text-muted-light dark:text-text-muted mb-4">
-                        Please configure Firebase environment variables to enable data submission.
-                        Add the following to your <code className="bg-black/10 dark:bg-white/10 px-2 py-0.5 rounded">.env.local</code> file:
+    // Show warning banner if Firebase not configured, but still allow form access
+    const firebaseWarning = !isConfigured ? (
+        <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/50">
+            <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                <div>
+                    <h3 className="font-semibold text-amber-600 dark:text-amber-400">Firebase Not Configured</h3>
+                    <p className="text-sm text-text-muted-light dark:text-text-muted mt-1">
+                        Firebase environment variables are missing. Data submissions may not be persisted.
+                        Check your <code className="bg-black/10 dark:bg-white/10 px-1 rounded">.env.local</code> file or restart the dev server.
                     </p>
-                    <pre className="bg-background-dark text-aqi-good p-4 rounded-xl text-left overflow-x-auto text-sm">
-                        {`NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://your_project.firebaseio.com
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id`}
-                    </pre>
                 </div>
             </div>
-        );
-    }
+        </div>
+    ) : null;
 
     return (
         <div className="p-4 md:p-6 max-w-3xl mx-auto">
@@ -388,6 +469,12 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id`}
                     </button>
                 </div>
             </div>
+
+            {/* Firebase Warning (if not configured) */}
+            {firebaseWarning}
+
+            {/* Manual Mode Toggle */}
+            <ManualModeToggle />
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Station Selection */}

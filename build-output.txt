@@ -1,0 +1,35 @@
+
+> pranamesh-dashboard@0.1.0 build
+> next build
+
+   Γû▓ Next.js 16.0.7 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully in 11.9s
+   Running TypeScript ...
+   Collecting page data using 3 workers ...
+   Generating static pages using 3 workers (0/9) ...
+   Generating static pages using 3 workers (2/9) 
+   Generating static pages using 3 workers (4/9) 
+   Generating static pages using 3 workers (6/9) 
+ Γ£ô Generating static pages using 3 workers (9/9) in 1892.2ms
+   Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ Γùï /admin
+Γö£ ╞Æ /api/aqi
+Γö£ ╞Æ /api/buses
+Γö£ ╞Æ /api/firebase
+Γö£ ╞Æ /api/historical
+Γö£ ╞Æ /api/weather
+Γö£ Γùï /mapping
+Γö£ Γùï /timestamp
+Γöö Γùï /trafficdata
+
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

@@ -5,7 +5,7 @@
  * realistic patterns based on current readings
  */
 
-import { fetchWAQIData, type WAQIResponse } from './waqi-api';
+import { fetchWAQIData } from './waqi-api';
 import { aqiStations } from '@/data/mock-data';
 import type { HistoricalDataPoint } from '@/types';
 

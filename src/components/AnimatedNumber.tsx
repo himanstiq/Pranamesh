@@ -100,9 +100,11 @@ export default function AnimatedNumber({
     useEffect(() => {
         if (hasAnimated) {
             // Re-animate when value changes
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: startAnimation calls setState to re-animate on value change
             startAnimation();
         } else {
             // Update static value if animation hasn't triggered yet
+             
             setDisplayValue(value);
         }
     }, [value, hasAnimated, startAnimation]);

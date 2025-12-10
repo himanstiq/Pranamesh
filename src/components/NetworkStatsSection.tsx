@@ -283,10 +283,10 @@ export default function NetworkStatsSection() {
                     {statsData.map((stat, index) => (
                         <div
                             key={index}
-                            className="flex flex-col gap-3 p-5 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:shadow-lg transition-shadow duration-300"
+                            className="flex flex-col gap-3 p-5 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover-lift hover-glow transition-all duration-300 group"
                         >
                             <div className="flex items-center gap-3">
-                                <span className={`material-symbols-outlined text-2xl ${stat.color}`}>
+                                <span className={`material-symbols-outlined text-2xl ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
                                     {stat.icon}
                                 </span>
                                 <span className="text-xs font-medium text-text-muted-light dark:text-text-muted uppercase tracking-wide">
@@ -321,7 +321,7 @@ export default function NetworkStatsSection() {
                 {/* Charts Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Pollution Overview Chart */}
-                    <div ref={pollutionChartRef} className="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6">
+                    <div ref={pollutionChartRef} className="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 hover-lift transition-all duration-300">
                         <div className="flex items-center gap-3 mb-6">
                             <span className="material-symbols-outlined text-2xl text-red-500 dark:text-red-400">
                                 factory
@@ -349,7 +349,7 @@ export default function NetworkStatsSection() {
                     </div>
 
                     {/* Deployment Overview Chart */}
-                    <div ref={deploymentChartRef} className="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6">
+                    <div ref={deploymentChartRef} className="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 hover-lift transition-all duration-300">
                         <div className="flex items-center gap-3 mb-6">
                             <span className="material-symbols-outlined text-2xl text-primary-light-theme dark:text-primary">
                                 deployed_code

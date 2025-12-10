@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { getAqiStatus, getAqiLabel } from '@/utils/aqi-utils';
+import { useSystemSettings } from '@/lib/SystemSettingsContext';
+import { useFirebaseAQI } from '@/components/FirebaseAQIProvider';
 
 interface AQIData {
     aqi: number;
@@ -270,7 +272,38 @@ export default function AQIHeroDisplay() {
     const [lastFetch, setLastFetch] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
+    // System settings for manual mode
+    const { settings } = useSystemSettings();
+    const { stationData, lastUpdate: firebaseLastUpdate, isConnected: firebaseConnected } = useFirebaseAQI();
+
+    // Effect for Firebase data when manual mode is ON
     useEffect(() => {
+        if (settings.manualMode && firebaseConnected && Object.keys(stationData).length > 0) {
+            // Calculate average from Firebase data
+            const stations = Object.values(stationData);
+            const totalAqi = stations.reduce((sum, s) => sum + (s.aqi || 0), 0);
+            const totalPm25 = stations.reduce((sum, s) => sum + (s.pm25 || 0), 0);
+            const totalPm10 = stations.reduce((sum, s) => sum + (s.pm10 || 0), 0);
+
+            const avgAqi = Math.round(totalAqi / stations.length);
+
+            setAqiData({
+                aqi: avgAqi,
+                pm25: Math.round(totalPm25 / stations.length),
+                pm10: Math.round(totalPm10 / stations.length),
+                status: getAqiStatus(avgAqi),
+                lastUpdated: firebaseLastUpdate?.toISOString() || new Date().toISOString(),
+            });
+            setLastFetch(firebaseLastUpdate || new Date());
+            setLoading(false);
+        }
+    }, [settings.manualMode, stationData, firebaseConnected, firebaseLastUpdate]);
+
+    // Effect for WAQI API data when manual mode is OFF
+    useEffect(() => {
+        // Skip if manual mode is ON
+        if (settings.manualMode) return;
+
         let isMounted = true;
 
         const fetchAQI = async (isInitial: boolean) => {
@@ -284,20 +317,29 @@ export default function AQIHeroDisplay() {
 
                 const data = await response.json();
 
-                if (isMounted && data.success && data.stations && data.stations.length > 0) {
-                    const totalAqi = data.stations.reduce((sum: number, s: { aqi: number }) => sum + s.aqi, 0);
-                    const totalPm25 = data.stations.reduce((sum: number, s: { pollutants: { pm25: number } }) => sum + (s.pollutants?.pm25 || 0), 0);
-                    const totalPm10 = data.stations.reduce((sum: number, s: { pollutants: { pm10: number } }) => sum + (s.pollutants?.pm10 || 0), 0);
-
-                    const avgAqi = Math.round(totalAqi / data.stations.length);
-
-                    setAqiData({
-                        aqi: avgAqi,
-                        pm25: Math.round(totalPm25 / data.stations.length),
-                        pm10: Math.round(totalPm10 / data.stations.length),
-                        status: getAqiStatus(avgAqi),
-                        lastUpdated: data.lastUpdated,
-                    });
+                if (isMounted && data.success) {
+                    // FIX: Use primary Delhi station data for accurate AQI instead of averaging
+                    // The first station from WAQI is the primary Delhi station
+                    if (data.primaryAqi !== undefined) {
+                        // Use primary AQI if available (from updated API)
+                        setAqiData({
+                            aqi: data.primaryAqi,
+                            pm25: data.primaryPm25 || data.pm25 || 0,
+                            pm10: data.primaryPm10 || data.pm10 || 0,
+                            status: getAqiStatus(data.primaryAqi),
+                            lastUpdated: data.lastUpdated,
+                        });
+                    } else if (data.stations && data.stations.length > 0) {
+                        // Fallback: use first station (primary Delhi station) directly
+                        const primaryStation = data.stations[0];
+                        setAqiData({
+                            aqi: primaryStation.aqi,
+                            pm25: primaryStation.pollutants?.pm25 || 0,
+                            pm10: primaryStation.pollutants?.pm10 || 0,
+                            status: getAqiStatus(primaryStation.aqi),
+                            lastUpdated: data.lastUpdated,
+                        });
+                    }
                     setLastFetch(new Date());
                 }
             } catch {
@@ -360,7 +402,7 @@ export default function AQIHeroDisplay() {
             isMounted = false;
             clearInterval(interval);
         };
-    }, []);
+    }, [settings.manualMode]);
 
     const getStatusColor = useCallback((status: string) => {
         switch (status) {

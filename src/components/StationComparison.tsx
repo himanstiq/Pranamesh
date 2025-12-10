@@ -17,6 +17,29 @@ import { useTheme } from './ThemeProvider';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { HistoricalDataPoint } from '@/types';
 
+// Trend icon renderer (moved outside component to avoid recreation)
+const renderTrendIcon = (trend: number) => {
+    if (trend > 5) return <TrendingUp className="w-4 h-4 text-red-400" />;
+    if (trend < -5) return <TrendingDown className="w-4 h-4 text-green-400" />;
+    return <Minus className="w-4 h-4 text-gray-400" />;
+};
+
+// StatCard component (moved outside to fix react-hooks/static-components error)
+const StatCard = ({ label, value, color, trend }: { label: string; value: number; color: string; trend?: number }) => (
+    <div className="text-center">
+        <p className="text-xs text-text-muted-light dark:text-text-muted mb-1">{label}</p>
+        <p className="text-xl font-bold" style={{ color }}>{value}</p>
+        {trend !== undefined && (
+            <div className="flex items-center justify-center gap-1 mt-1">
+                {renderTrendIcon(trend)}
+                <span className={`text-xs ${trend > 0 ? 'text-red-400' : trend < 0 ? 'text-green-400' : 'text-gray-400'}`}>
+                    {trend > 0 ? '+' : ''}{trend}
+                </span>
+            </div>
+        )}
+    </div>
+);
+
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -159,27 +182,6 @@ const StationComparison = ({ station1, station2, timeRange }: StationComparisonP
             mode: 'index' as const,
         },
     };
-
-    const renderTrendIcon = (trend: number) => {
-        if (trend > 5) return <TrendingUp className="w-4 h-4 text-red-400" />;
-        if (trend < -5) return <TrendingDown className="w-4 h-4 text-green-400" />;
-        return <Minus className="w-4 h-4 text-gray-400" />;
-    };
-
-    const StatCard = ({ label, value, color, trend }: { label: string; value: number; color: string; trend?: number }) => (
-        <div className="text-center">
-            <p className="text-xs text-text-muted-light dark:text-text-muted mb-1">{label}</p>
-            <p className="text-xl font-bold" style={{ color }}>{value}</p>
-            {trend !== undefined && (
-                <div className="flex items-center justify-center gap-1 mt-1">
-                    {renderTrendIcon(trend)}
-                    <span className={`text-xs ${trend > 0 ? 'text-red-400' : trend < 0 ? 'text-green-400' : 'text-gray-400'}`}>
-                        {trend > 0 ? '+' : ''}{trend}
-                    </span>
-                </div>
-            )}
-        </div>
-    );
 
     return (
         <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-2xl p-6 sm:p-8">

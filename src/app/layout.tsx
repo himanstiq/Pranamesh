@@ -3,6 +3,8 @@ import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { FirebaseAQIProvider } from "@/components/FirebaseAQIProvider";
+import { AuthProvider } from "@/lib/AuthContext";
+import { SystemSettingsProvider } from "@/lib/SystemSettingsContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -77,17 +79,21 @@ export default function RootLayout({
                 suppressHydrationWarning
             >
                 <ThemeProvider>
-                    <FirebaseAQIProvider>
-                        <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
-                            <Header />
-                            <div className="layout-container flex h-full grow flex-col">
-                                <ErrorBoundary>
-                                    {children}
-                                </ErrorBoundary>
-                            </div>
-                            <Footer />
-                        </div>
-                    </FirebaseAQIProvider>
+                    <AuthProvider>
+                        <SystemSettingsProvider>
+                            <FirebaseAQIProvider>
+                                <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+                                    <Header />
+                                    <div className="layout-container flex h-full grow flex-col">
+                                        <ErrorBoundary>
+                                            {children}
+                                        </ErrorBoundary>
+                                    </div>
+                                    <Footer />
+                                </div>
+                            </FirebaseAQIProvider>
+                        </SystemSettingsProvider>
+                    </AuthProvider>
                 </ThemeProvider>
             </body>
         </html>

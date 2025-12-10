@@ -7,7 +7,6 @@ import {
     getDoc,
     getDocs,
     addDoc,
-    updateDoc,
     deleteDoc,
     query,
     where,
@@ -17,7 +16,7 @@ import {
     DocumentData,
     QueryDocumentSnapshot,
 } from 'firebase/firestore';
-import { ref, set, get, update } from 'firebase/database';
+import { ref, set, update } from 'firebase/database';
 import { getFirebaseFirestore, getFirebaseDatabase, isFirebaseConfigured, isRealtimeDatabaseConfigured } from './firebase';
 import type { AQIStation, Pollutants } from '@/types';
 

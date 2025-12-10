@@ -3,7 +3,7 @@
  * Uses advanced stealth techniques for bot detection evasion
  */
 
-import { chromium, type Browser, type Page, type BrowserContext } from 'playwright';
+import { chromium, type Browser, type Page } from 'playwright';
 
 // Cache for scraped data
 let cachedScrapedData: { data: AQIScrapedData | null; timestamp: number } | null = null;

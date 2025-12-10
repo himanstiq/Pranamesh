@@ -10,6 +10,7 @@ import type { BusPosition } from '@/components/AQIMap';
 import { getHealthAdvisory, getTopDiseasesForAQI } from '@/data/disease-data';
 import { subscribeToAQIData, mergeFirebaseDataWithStations, type FirebaseStationsData } from '@/lib/firebase-aqi-service';
 import { isFirebaseConfigured } from '@/lib/firebase';
+import { useSystemSettings } from '@/lib/SystemSettingsContext';
 
 // Dynamic import for Google Maps (SSR issue)
 const AQIMap = dynamic(() => import('@/components/AQIMap'), {
@@ -50,6 +51,9 @@ const MappingPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
     const [firebaseConnected, setFirebaseConnected] = useState(false);
+
+    // System settings for manual mode
+    const { settings } = useSystemSettings();
 
     // Calculate average AQI for Delhi
     const averageAqi = useMemo(() => {
@@ -134,15 +138,21 @@ const MappingPage = () => {
     }, [handleRefresh, fetchAQIData, fetchBusData]);
     /* eslint-enable react-hooks/set-state-in-effect */
 
-    // Firebase real-time subscription for dynamic updates
-     
+    // Firebase real-time subscription for dynamic updates (only when manual mode is ON)
+
     useEffect(() => {
+        // Only subscribe to Firebase when manual mode is ON
+        if (!settings.manualMode) {
+            console.log('Manual mode OFF, using WAQI API data');
+            return;
+        }
+
         if (!isFirebaseConfigured()) {
             console.log('Firebase not configured, skipping real-time subscription');
             return;
         }
 
-        console.log('Setting up Firebase real-time subscription...');
+        console.log('Manual mode ON - Setting up Firebase real-time subscription...');
         const unsubscribe = subscribeToAQIData((firebaseData: FirebaseStationsData) => {
             setStations(prevStations => {
                 const merged = mergeFirebaseDataWithStations(prevStations, firebaseData);
@@ -158,8 +168,8 @@ const MappingPage = () => {
             unsubscribe();
             setFirebaseConnected(false);
         };
-    }, []);
-     
+    }, [settings.manualMode]);
+
 
     // Filter stations by search
     const filteredStations = useMemo(() => {

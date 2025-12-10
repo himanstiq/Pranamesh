@@ -107,6 +107,7 @@ export function FirebaseAQIProvider({ children }: FirebaseAQIProviderProps) {
     }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: Firebase initialization must happen on mount
         const cleanup = initializeConnection();
         return () => {
             if (cleanup) cleanup();
