@@ -2,7 +2,7 @@
 
 Real-time air quality monitoring dashboard for AICTE Delhi and the NCR region, developed by Team Optivis for Smart India Hackathon 2025.
 
-![PranaMesh Dashboard](public/images/hero-light.webp)
+
 
 ## Features
 
