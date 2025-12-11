@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getAqiStatus, getAqiLabel } from '@/utils/aqi-utils';
 import { useSystemSettings } from '@/lib/SystemSettingsContext';
 import { useFirebaseAQI } from '@/components/FirebaseAQIProvider';
+import { useLocation } from '@/lib/LocationContext';
 
 interface AQIData {
     aqi: number;
@@ -19,6 +20,12 @@ interface WeatherData {
     humidity: number;
     windSpeed: number;
     source: string;
+    uvIndex?: number;
+    uvIndexText?: string;
+    weatherText?: string;
+    weatherIcon?: number;
+    isDayTime?: boolean;
+    feelsLike?: number;
 }
 
 // AQI status color from aqi.in (exact RGB values)
@@ -34,79 +41,118 @@ function getAqiStatusColor(status: string): string {
     }
 }
 
-// Masked Character SVG Component (similar to aqi.in mascot)
-function MaskedCharacter() {
+// Masked Character SVG Component with AQI-based dynamic animations
+function MaskedCharacter({ aqiLevel = 'moderate' }: { aqiLevel?: string }) {
+    // Determine animation intensity based on AQI severity
+    const isSevere = aqiLevel === 'severe' || aqiLevel === 'hazardous';
+    const isPoor = aqiLevel === 'poor' || aqiLevel === 'unhealthy' || isSevere;
+
+    // Animation classes based on AQI level
+    const bodyAnimationClass = isSevere ? 'animate-cough-severe' : isPoor ? 'animate-cough' : 'animate-body-sway';
+    const breathingClass = isPoor ? 'animate-breathe-intense' : '';
+
     return (
-        <svg
-            width="120"
-            height="160"
-            viewBox="0 0 120 160"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <div
+            className="absolute z-10"
             style={{
-                position: 'absolute',
                 bottom: '50px',
                 right: '35%',
-                opacity: 0.9,
-                zIndex: 5,
             }}
         >
-            {/* Hair */}
-            <ellipse cx="60" cy="28" rx="28" ry="22" fill="#2D1B4E" />
-            <path d="M32 28 Q30 15 45 10 Q60 5 75 10 Q90 15 88 28" fill="#2D1B4E" />
+            <svg
+                width="120"
+                height="160"
+                viewBox="0 0 120 160"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className={`${bodyAnimationClass} ${breathingClass}`}
+                style={{
+                    opacity: 0.95,
+                    filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))',
+                }}
+            >
+                {/* Hair */}
+                <ellipse cx="60" cy="28" rx="28" ry="22" fill="#2D1B4E" />
+                <path d="M32 28 Q30 15 45 10 Q60 5 75 10 Q90 15 88 28" fill="#2D1B4E" />
 
-            {/* Face */}
-            <ellipse cx="60" cy="42" rx="22" ry="20" fill="#F5D0B5" />
+                {/* Head group with cough animation */}
+                <g className={isPoor ? 'animate-head-cough' : ''} style={{ transformOrigin: '60px 45px' }}>
+                    {/* Face */}
+                    <ellipse cx="60" cy="42" rx="22" ry="20" fill="#F5D0B5" />
 
-            {/* Eyes */}
-            <ellipse cx="52" cy="38" rx="4" ry="5" fill="#2D1B4E" />
-            <ellipse cx="68" cy="38" rx="4" ry="5" fill="#2D1B4E" />
-            <circle cx="53" cy="37" r="1.5" fill="white" />
-            <circle cx="69" cy="37" r="1.5" fill="white" />
+                    {/* Eyes with blinking animation */}
+                    <g className="animate-eye-blink" style={{ transformOrigin: '52px 38px' }}>
+                        <ellipse cx="52" cy="38" rx="4" ry="5" fill="#2D1B4E" />
+                        <circle cx="53" cy="37" r="1.5" fill="white" />
+                    </g>
+                    <g className="animate-eye-blink" style={{ transformOrigin: '68px 38px', animationDelay: '0.1s' }}>
+                        <ellipse cx="68" cy="38" rx="4" ry="5" fill="#2D1B4E" />
+                        <circle cx="69" cy="37" r="1.5" fill="white" />
+                    </g>
 
-            {/* Eyebrows - worried expression */}
-            <path d="M46 32 Q52 29 56 32" stroke="#2D1B4E" strokeWidth="2" strokeLinecap="round" fill="none" />
-            <path d="M64 32 Q68 29 74 32" stroke="#2D1B4E" strokeWidth="2" strokeLinecap="round" fill="none" />
+                    {/* Eyebrows - worried/tired expression based on AQI */}
+                    {isPoor ? (
+                        <>
+                            {/* More worried eyebrows for poor AQI */}
+                            <path d="M46 30 Q52 27 56 30" stroke="#2D1B4E" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                            <path d="M64 30 Q68 27 74 30" stroke="#2D1B4E" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                        </>
+                    ) : (
+                        <>
+                            {/* Normal eyebrows */}
+                            <path d="M46 32 Q52 29 56 32" stroke="#2D1B4E" strokeWidth="2" strokeLinecap="round" fill="none" />
+                            <path d="M64 32 Q68 29 74 32" stroke="#2D1B4E" strokeWidth="2" strokeLinecap="round" fill="none" />
+                        </>
+                    )}
 
-            {/* Mask */}
-            <path d="M38 46 Q40 42 60 40 Q80 42 82 46 L80 62 Q60 70 40 62 Z" fill="#F5C542" />
-            <path d="M38 50 L82 50" stroke="#E5A832" strokeWidth="1" />
-            <path d="M38 55 L82 55" stroke="#E5A832" strokeWidth="1" />
-            <ellipse cx="45" cy="52" rx="3" ry="4" fill="#E5A832" />
-            <ellipse cx="75" cy="52" rx="3" ry="4" fill="#E5A832" />
+                    {/* Mask */}
+                    <path d="M38 46 Q40 42 60 40 Q80 42 82 46 L80 62 Q60 70 40 62 Z" fill="#F5C542" />
+                    <path d="M38 50 L82 50" stroke="#E5A832" strokeWidth="1" />
+                    <path d="M38 55 L82 55" stroke="#E5A832" strokeWidth="1" />
+                    <ellipse cx="45" cy="52" rx="3" ry="4" fill="#E5A832" />
+                    <ellipse cx="75" cy="52" rx="3" ry="4" fill="#E5A832" />
 
-            {/* Ears */}
-            <ellipse cx="38" cy="42" rx="4" ry="6" fill="#F5D0B5" />
-            <ellipse cx="82" cy="42" rx="4" ry="6" fill="#F5D0B5" />
+                    {/* Ears */}
+                    <ellipse cx="38" cy="42" rx="4" ry="6" fill="#F5D0B5" />
+                    <ellipse cx="82" cy="42" rx="4" ry="6" fill="#F5D0B5" />
+                </g>
 
-            {/* Body - Kurta/Shirt */}
-            <path d="M40 65 L35 110 L85 110 L80 65 Q60 70 40 65" fill="#6B4BA3" />
+                {/* Body - Kurta/Shirt */}
+                <path d="M40 65 L35 110 L85 110 L80 65 Q60 70 40 65" fill="#6B4BA3" />
 
-            {/* Arms */}
-            <path d="M35 70 L20 95 L25 100 L42 80" fill="#6B4BA3" />
-            <path d="M85 70 L100 95 L95 100 L78 80" fill="#6B4BA3" />
+                {/* Arms with shake animation for severe AQI */}
+                <g className={isSevere ? 'animate-arm-shake' : ''} style={{ transformOrigin: '35px 85px' }}>
+                    <path d="M35 70 L20 95 L25 100 L42 80" fill="#6B4BA3" />
+                    <ellipse cx="22" cy="98" rx="6" ry="5" fill="#F5D0B5" />
+                </g>
+                <g className={isSevere ? 'animate-arm-shake' : ''} style={{ transformOrigin: '85px 85px', animationDelay: '0.2s' }}>
+                    <path d="M85 70 L100 95 L95 100 L78 80" fill="#6B4BA3" />
+                    <ellipse cx="98" cy="98" rx="6" ry="5" fill="#F5D0B5" />
+                </g>
 
-            {/* Hands */}
-            <ellipse cx="22" cy="98" rx="6" ry="5" fill="#F5D0B5" />
-            <ellipse cx="98" cy="98" rx="6" ry="5" fill="#F5D0B5" />
+                {/* Legs */}
+                <rect x="42" y="110" width="14" height="35" fill="#4A3580" rx="3" />
+                <rect x="64" y="110" width="14" height="35" fill="#4A3580" rx="3" />
 
-            {/* Legs */}
-            <rect x="42" y="110" width="14" height="35" fill="#4A3580" rx="3" />
-            <rect x="64" y="110" width="14" height="35" fill="#4A3580" rx="3" />
+                {/* Feet */}
+                <ellipse cx="49" cy="148" rx="10" ry="5" fill="#3D2E66" />
+                <ellipse cx="71" cy="148" rx="10" ry="5" fill="#3D2E66" />
 
-            {/* Feet */}
-            <ellipse cx="49" cy="148" rx="10" ry="5" fill="#3D2E66" />
-            <ellipse cx="71" cy="148" rx="10" ry="5" fill="#3D2E66" />
-
-            {/* Subtle breathing animation on chest area */}
-            <animateTransform
-                attributeName="transform"
-                type="translate"
-                values="0 0; 0 2; 0 0"
-                dur="2s"
-                repeatCount="indefinite"
-            />
-        </svg>
+                {/* Sweat drops for severe AQI */}
+                {isSevere && (
+                    <>
+                        <ellipse cx="36" cy="35" rx="2" ry="3" fill="#87CEEB" opacity="0.7">
+                            <animate attributeName="opacity" values="0.7;0.3;0.7" dur="1s" repeatCount="indefinite" />
+                            <animate attributeName="cy" values="35;40;35" dur="1.5s" repeatCount="indefinite" />
+                        </ellipse>
+                        <ellipse cx="84" cy="33" rx="2" ry="3" fill="#87CEEB" opacity="0.6">
+                            <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1.2s" repeatCount="indefinite" />
+                            <animate attributeName="cy" values="33;38;33" dur="1.3s" repeatCount="indefinite" />
+                        </ellipse>
+                    </>
+                )}
+            </svg>
+        </div>
     );
 }
 
@@ -201,6 +247,97 @@ function CitySilhouette() {
     );
 }
 
+// Pollution Particles - floating particles that intensify with worse AQI
+function PollutionParticles({ aqiLevel = 'moderate' }: { aqiLevel?: string }) {
+    // Determine particle count based on AQI severity
+    const isSevere = aqiLevel === 'severe' || aqiLevel === 'hazardous';
+    const isPoor = aqiLevel === 'poor' || aqiLevel === 'unhealthy' || isSevere;
+    const isModerate = aqiLevel === 'moderate' || aqiLevel === 'satisfactory';
+
+    const particleCount = isSevere ? 20 : isPoor ? 12 : isModerate ? 6 : 3;
+    const particleOpacity = isSevere ? 0.6 : isPoor ? 0.4 : 0.2;
+
+    // Use state to generate particles only on client-side
+    const [particles, setParticles] = useState<Array<{ id: number; left: string; bottom: string; size: number; delay: number; duration: number }>>([]);
+
+    useEffect(() => {
+        const newParticles = Array.from({ length: particleCount }, (_, i) => ({
+            id: i,
+            left: `${Math.random() * 100}%`,
+            bottom: `${Math.random() * 30}%`,
+            size: Math.random() * 6 + 3,
+            delay: Math.random() * 8,
+            duration: Math.random() * 4 + 6,
+        }));
+        setParticles(newParticles);
+    }, [particleCount]);
+
+    return (
+        <div
+            className="absolute inset-0 pointer-events-none overflow-hidden"
+            style={{ zIndex: 4 }}
+        >
+            {particles.map((particle) => (
+                <div
+                    key={particle.id}
+                    className="absolute rounded-full animate-particle-float"
+                    style={{
+                        left: particle.left,
+                        bottom: particle.bottom,
+                        width: particle.size,
+                        height: particle.size,
+                        background: `radial-gradient(circle, rgba(100, 100, 100, ${particleOpacity}) 0%, rgba(80, 80, 80, ${particleOpacity * 0.5}) 100%)`,
+                        animationDelay: `${particle.delay}s`,
+                        animationDuration: `${particle.duration}s`,
+                    }}
+                />
+            ))}
+            {/* Additional larger dust motes for severe AQI */}
+            {isSevere && Array.from({ length: 5 }, (_, i) => (
+                <div
+                    key={`dust-${i}`}
+                    className="absolute rounded-full animate-particle-drift"
+                    style={{
+                        left: `${20 + i * 15}%`,
+                        top: `${30 + (i % 3) * 20}%`,
+                        width: 12 + i * 2,
+                        height: 12 + i * 2,
+                        background: `radial-gradient(circle, rgba(139, 90, 43, 0.3) 0%, transparent 70%)`,
+                        animationDelay: `${i * 1.5}s`,
+                        filter: 'blur(2px)',
+                    }}
+                />
+            ))}
+        </div>
+    );
+}
+
+// Animated Haze Overlay - creates atmospheric pollution effect
+function AnimatedHaze({ aqiLevel = 'moderate' }: { aqiLevel?: string }) {
+    // Determine haze intensity based on AQI
+    const isSevere = aqiLevel === 'severe' || aqiLevel === 'hazardous';
+    const isPoor = aqiLevel === 'poor' || aqiLevel === 'unhealthy' || isSevere;
+
+    const hazeOpacity = isSevere ? 0.35 : isPoor ? 0.2 : 0.08;
+    const hazeColor = isSevere ? 'rgba(139, 90, 43, ' : isPoor ? 'rgba(150, 130, 100, ' : 'rgba(180, 180, 180, ';
+
+    return (
+        <div
+            className="absolute inset-0 pointer-events-none animate-haze"
+            style={{
+                zIndex: 3,
+                background: `linear-gradient(
+                    180deg,
+                    ${hazeColor}${hazeOpacity * 0.5}) 0%,
+                    ${hazeColor}${hazeOpacity}) 50%,
+                    ${hazeColor}${hazeOpacity * 1.5}) 100%
+                )`,
+                mixBlendMode: 'multiply',
+            }}
+        />
+    );
+}
+
 // AQI Scale component
 function AQIScale({ currentAqi }: { currentAqi: number }) {
     const getIndicatorPosition = () => {
@@ -271,13 +408,36 @@ export default function AQIHeroDisplay() {
     const [loading, setLoading] = useState(true);
     const [lastFetch, setLastFetch] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [locationName, setLocationName] = useState<string | null>(null);
 
     // System settings for manual mode
     const { settings } = useSystemSettings();
     const { stationData, lastUpdate: firebaseLastUpdate, isConnected: firebaseConnected } = useFirebaseAQI();
 
+    // Location context for location-based AQI
+    const { isLocationBased, locationAQI, location } = useLocation();
+
+    // Effect for location-based AQI (priority when enabled)
+    useEffect(() => {
+        if (isLocationBased && locationAQI) {
+            setAqiData({
+                aqi: locationAQI.aqi,
+                pm25: locationAQI.pm25,
+                pm10: locationAQI.pm10,
+                status: getAqiStatus(locationAQI.aqi),
+                lastUpdated: locationAQI.lastUpdated,
+            });
+            setLocationName(locationAQI.cityName);
+            setLastFetch(new Date(locationAQI.lastUpdated));
+            setLoading(false);
+        }
+    }, [isLocationBased, locationAQI]);
+
     // Effect for Firebase data when manual mode is ON
     useEffect(() => {
+        // Skip if location-based mode is active
+        if (isLocationBased && locationAQI) return;
+
         if (settings.manualMode && firebaseConnected && Object.keys(stationData).length > 0) {
             // Calculate average from Firebase data
             const stations = Object.values(stationData);
@@ -294,15 +454,17 @@ export default function AQIHeroDisplay() {
                 status: getAqiStatus(avgAqi),
                 lastUpdated: firebaseLastUpdate?.toISOString() || new Date().toISOString(),
             });
+            setLocationName(null);
             setLastFetch(firebaseLastUpdate || new Date());
             setLoading(false);
         }
-    }, [settings.manualMode, stationData, firebaseConnected, firebaseLastUpdate]);
+    }, [settings.manualMode, stationData, firebaseConnected, firebaseLastUpdate, isLocationBased, locationAQI]);
 
     // Effect for WAQI API data when manual mode is OFF
     useEffect(() => {
-        // Skip if manual mode is ON
+        // Skip if manual mode is ON or location-based mode is active
         if (settings.manualMode) return;
+        if (isLocationBased && locationAQI) return;
 
         let isMounted = true;
 
@@ -376,6 +538,12 @@ export default function AQIHeroDisplay() {
                         humidity: Math.round(data.humidity),
                         windSpeed: Math.round(data.windSpeed),
                         source: data.source,
+                        uvIndex: data.uvIndex,
+                        uvIndexText: data.uvIndexText,
+                        weatherText: data.weatherText,
+                        weatherIcon: data.weatherIcon,
+                        isDayTime: data.isDayTime,
+                        feelsLike: data.feelsLike,
                     });
                 }
             } catch {
@@ -428,9 +596,9 @@ export default function AQIHeroDisplay() {
         });
     }, []);
 
-    const displayAqi = aqiData?.aqi ?? 287;
-    const displayPm25 = aqiData?.pm25 ?? 196;
-    const displayPm10 = aqiData?.pm10 ?? 315;
+    const displayAqi = aqiData?.aqi ?? 245;
+    const displayPm25 = aqiData?.pm25 ?? 168;
+    const displayPm10 = aqiData?.pm10 ?? 285;
     const displayStatus = aqiData?.status ?? 'severe';
     const statusColor = getStatusColor(displayStatus);
     const aqiBackgroundColor = getAqiStatusColor(displayStatus);
@@ -454,8 +622,14 @@ export default function AQIHeroDisplay() {
                 {/* Animated Clouds */}
                 <AnimatedClouds />
 
-                {/* Masked Character */}
-                <MaskedCharacter />
+                {/* Pollution Particles - intensity based on AQI */}
+                <PollutionParticles aqiLevel={displayStatus} />
+
+                {/* Animated Haze Overlay */}
+                <AnimatedHaze aqiLevel={displayStatus} />
+
+                {/* Masked Character with AQI-based animations */}
+                <MaskedCharacter aqiLevel={displayStatus} />
 
                 {/* AQI Status Colored Stripe at Bottom */}
                 <div
@@ -470,15 +644,26 @@ export default function AQIHeroDisplay() {
                             {/* Left Section - AQI Value and Scale */}
                             <div className="flex-1 w-full lg:max-w-2xl">
                                 {/* Live AQI Header */}
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className="relative w-3 h-3">
-                                        <span className="absolute inset-0 rounded-full bg-red-500" />
-                                        <span className="absolute inset-0 rounded-full bg-red-500 live-pulse" />
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="relative w-3 h-3">
+                                            <span className="absolute inset-0 rounded-full bg-red-500" />
+                                            <span className="absolute inset-0 rounded-full bg-red-500 live-pulse" />
+                                        </div>
+                                        <span className="text-gray-800 font-bold text-lg">Live AQI</span>
+                                        {isRefreshing && (
+                                            <span className="ml-2 text-gray-600 text-sm">Updating...</span>
+                                        )}
                                     </div>
-                                    <span className="text-gray-800 font-bold text-lg">Live AQI</span>
-                                    {isRefreshing && (
-                                        <span className="ml-2 text-gray-600 text-sm">Updating...</span>
-                                    )}
+                                    {/* Location indicator */}
+                                    <div className="flex items-center gap-1.5 text-gray-700">
+                                        <span className="material-symbols-outlined text-base">
+                                            {isLocationBased ? 'my_location' : 'location_city'}
+                                        </span>
+                                        <span className="font-medium text-sm">
+                                            {locationName || 'Delhi, India'}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 {/* AQI Value and Status */}
@@ -488,7 +673,7 @@ export default function AQIHeroDisplay() {
                                             className="text-7xl sm:text-8xl lg:text-9xl font-extrabold leading-none"
                                             style={{ color: '#1a1a2e' }}
                                         >
-                                            {loading ? '...' : displayAqi}
+                                            {displayAqi}
                                         </span>
                                     </div>
                                     <div className="flex flex-col gap-2">
@@ -500,7 +685,7 @@ export default function AQIHeroDisplay() {
                                             <span
                                                 className="text-2xl sm:text-3xl font-bold capitalize text-white"
                                             >
-                                                {loading ? '...' : getAqiLabel(displayStatus as 'good' | 'moderate' | 'poor' | 'unhealthy' | 'severe' | 'hazardous')}
+                                                {getAqiLabel(displayStatus as 'good' | 'moderate' | 'poor' | 'unhealthy' | 'severe' | 'hazardous')}
                                             </span>
                                         </div>
                                     </div>
@@ -510,12 +695,12 @@ export default function AQIHeroDisplay() {
                                 <div className="flex flex-wrap gap-8 sm:gap-12 mb-8">
                                     <div className="flex items-baseline gap-2">
                                         <span className="font-bold text-gray-700 text-base">PM10 :</span>
-                                        <span className="font-bold text-2xl text-gray-900">{loading ? '...' : displayPm10}</span>
+                                        <span className="font-bold text-2xl text-gray-900">{displayPm10}</span>
                                         <span className="text-gray-600 text-sm">µg/m³</span>
                                     </div>
                                     <div className="flex items-baseline gap-2">
                                         <span className="font-bold text-gray-700 text-base">PM2.5 :</span>
-                                        <span className="font-bold text-2xl text-gray-900">{loading ? '...' : displayPm25}</span>
+                                        <span className="font-bold text-2xl text-gray-900">{displayPm25}</span>
                                         <span className="text-gray-600 text-sm">µg/m³</span>
                                     </div>
                                 </div>
@@ -535,75 +720,94 @@ export default function AQIHeroDisplay() {
                                 </Link>
                             </div>
 
-                            {/* Right Section - Weather Card matching aqi.in style */}
-                            <div className="w-full lg:w-auto lg:min-w-[320px]">
-                                <div
-                                    className="rounded-2xl overflow-hidden shadow-xl"
-                                    style={{
-                                        background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.9) 100%)',
-                                        backdropFilter: 'blur(16px)',
-                                        WebkitBackdropFilter: 'blur(16px)',
-                                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                                    }}
-                                >
+                            {/* Right Section - Weather Card with Liquid Glass Effect */}
+                            <div className="w-full lg:w-auto lg:min-w-[340px]">
+                                <div className="liquid-glass liquid-glass-3d cursor-pointer relative">
+                                    {/* Floating Bubbles */}
+                                    <div
+                                        className="liquid-glass-bubble"
+                                        style={{ width: 20, height: 20, top: '10%', left: '80%', animationDelay: '0s' }}
+                                    />
+                                    <div
+                                        className="liquid-glass-bubble"
+                                        style={{ width: 14, height: 14, top: '60%', left: '5%', animationDelay: '1s' }}
+                                    />
+                                    <div
+                                        className="liquid-glass-bubble"
+                                        style={{ width: 10, height: 10, top: '30%', left: '90%', animationDelay: '2s' }}
+                                    />
+
                                     {/* Weather Header */}
-                                    <div className="flex items-center justify-between p-5 sm:p-6">
+                                    <div className="flex items-center justify-between p-5 sm:p-6 relative z-10">
                                         <div className="flex items-center gap-4">
-                                            <span className="material-symbols-outlined text-5xl text-sky-500 drop-shadow">
-                                                cloud
+                                            <span className="material-symbols-outlined text-5xl sm:text-6xl text-sky-500 weather-icon-animated">
+                                                {weatherData?.weatherText?.toLowerCase().includes('sunny') || weatherData?.weatherText?.toLowerCase().includes('clear') ? 'sunny' :
+                                                    weatherData?.weatherText?.toLowerCase().includes('cloud') ? 'cloudy' :
+                                                        weatherData?.weatherText?.toLowerCase().includes('rain') ? 'rainy' :
+                                                            weatherData?.weatherText?.toLowerCase().includes('fog') || weatherData?.weatherText?.toLowerCase().includes('haze') || weatherData?.weatherText?.toLowerCase().includes('mist') ? 'foggy' :
+                                                                weatherData?.isDayTime === false ? 'nights_stay' : 'partly_cloudy_day'}
                                             </span>
                                             <div>
-                                                <p className="text-4xl sm:text-5xl font-bold text-gray-800">
-                                                    {weatherData ? `${weatherData.temperature}` : '...'}<span className="text-2xl font-normal text-gray-600">°C</span>
+                                                <p className="text-4xl sm:text-5xl font-bold text-gray-800 temp-text-glow font-display">
+                                                    {weatherData?.temperature ?? '--'}
+                                                    <span className="text-2xl font-normal text-gray-600">°C</span>
                                                 </p>
-                                                <p className="text-gray-600 font-medium">
-                                                    Mist
+                                                <p className="text-gray-600 font-semibold text-sm sm:text-base">
+                                                    {weatherData?.weatherText ?? 'Loading...'}
                                                 </p>
+                                                {weatherData?.feelsLike && (
+                                                    <p className="text-gray-500 text-xs">
+                                                        Feels like {weatherData.feelsLike}°C
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
-                                        <button
-                                            className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-                                            title="View details"
+                                        <a
+                                            href="https://www.accuweather.com/en/in/new-delhi/202396/weather-forecast/202396"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-10 h-10 rounded-xl bg-white/60 hover:bg-white/90 flex items-center justify-center transition-all hover:scale-110 shadow-md"
+                                            title="View on AccuWeather"
                                         >
-                                            <span className="material-symbols-outlined text-gray-600 text-xl" style={{ transform: 'rotate(-45deg)' }}>
+                                            <span className="material-symbols-outlined text-gray-700 text-xl" style={{ transform: 'rotate(-45deg)' }}>
                                                 arrow_forward
                                             </span>
-                                        </button>
+                                        </a>
                                     </div>
 
-                                    {/* Weather Details */}
+                                    {/* Weather Details with Stat Cards */}
                                     <div
-                                        className="p-4 sm:p-5 flex gap-4 sm:gap-6 justify-between"
+                                        className="p-4 sm:p-5 flex gap-3 sm:gap-4 justify-between relative z-10"
                                         style={{
-                                            borderTop: '1px solid rgba(0, 0, 0, 0.08)',
-                                            background: 'rgba(248, 250, 252, 0.8)',
+                                            borderTop: '1px solid rgba(255, 255, 255, 0.4)',
+                                            background: 'rgba(248, 250, 252, 0.5)',
                                         }}
                                     >
-                                        <div className="flex items-center gap-2">
+                                        <div className="weather-stat-card flex-1 flex items-center gap-2">
                                             <span className="material-symbols-outlined text-xl text-emerald-500">
                                                 humidity_percentage
                                             </span>
                                             <div>
-                                                <p className="text-xs text-gray-500 font-medium">Humidity</p>
-                                                <p className="font-bold text-gray-800">{weatherData ? `${weatherData.humidity} %` : '...'}</p>
+                                                <p className="text-xs text-gray-500 font-semibold">Humidity</p>
+                                                <p className="font-bold text-gray-800 text-lg">{weatherData?.humidity ?? '--'}%</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="weather-stat-card flex-1 flex items-center gap-2">
                                             <span className="material-symbols-outlined text-xl text-sky-500">
                                                 air
                                             </span>
                                             <div>
-                                                <p className="text-xs text-gray-500 font-medium">Wind Speed</p>
-                                                <p className="font-bold text-gray-800">{weatherData ? `${weatherData.windSpeed} km/h` : '...'}</p>
+                                                <p className="text-xs text-gray-500 font-semibold">Wind</p>
+                                                <p className="font-bold text-gray-800 text-lg">{weatherData?.windSpeed ?? '--'} <span className="text-xs font-normal">km/h</span></p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="weather-stat-card flex-1 flex items-center gap-2">
                                             <span className="material-symbols-outlined text-xl text-amber-500">
                                                 wb_sunny
                                             </span>
                                             <div>
-                                                <p className="text-xs text-gray-500 font-medium">UV Index</p>
-                                                <p className="font-bold text-gray-800">0</p>
+                                                <p className="text-xs text-gray-500 font-semibold">UV Index</p>
+                                                <p className="font-bold text-gray-800 text-lg">{weatherData?.uvIndexText ?? (weatherData?.uvIndex !== undefined ? weatherData.uvIndex : '--')}</p>
                                             </div>
                                         </div>
                                     </div>

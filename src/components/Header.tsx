@@ -1,16 +1,86 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from './ThemeProvider';
+import { aqiStations } from '@/data/mock-data';
+import { getAqiStatus, getAqiColor } from '@/utils/aqi-utils';
+import { useLocation } from '@/lib/LocationContext';
 
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fontSize, setFontSize] = useState(100); // percentage: 90, 100, 110
+
+  // Location context
+  const { location, requestLocation, clearLocation, isLocationBased, locationAQI } = useLocation();
+
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Handle my_location button click (toggle behavior)
+  const handleMyLocationClick = async () => {
+    if (isLocationBased) {
+      // Already using location - clear it to revert to Delhi
+      clearLocation();
+    } else {
+      // Request location
+      await requestLocation();
+      // Navigate to home to show location-based AQI
+      if (pathname !== '/') {
+        router.push('/');
+      }
+    }
+  };
+
+  // Filter stations based on search query
+  const filteredStations = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const query = searchQuery.toLowerCase();
+    return aqiStations
+      .filter(station =>
+        station.name.toLowerCase().includes(query) ||
+        station.location.toLowerCase().includes(query)
+      )
+      .slice(0, 8); // Limit to 8 results
+  }, [searchQuery]);
+
+  // Handle station selection - navigate to mapping page
+  const handleStationSelect = (stationId: string) => {
+    setSearchQuery('');
+    setIsSearchOpen(false);
+    router.push(`/mapping?station=${stationId}`);
+  };
+
+  // Handle search submit
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (filteredStations.length > 0) {
+      handleStationSelect(filteredStations[0].id);
+    } else if (searchQuery.trim()) {
+      // Navigate to mapping page with search query
+      router.push(`/mapping?search=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery('');
+      setIsSearchOpen(false);
+    }
+  };
+
+  // Close search dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Font size adjustment functions
   const decreaseFontSize = () => setFontSize(prev => Math.max(85, prev - 10));
@@ -50,6 +120,8 @@ export default function Header() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: sync menu state with navigation
     setMobileMenuOpen(false);
+    setSearchQuery('');
+    setIsSearchOpen(false);
   }, [pathname]);
 
   // Prevent body scroll when mobile menu is open
@@ -143,10 +215,118 @@ export default function Header() {
               <span className="text-text-muted-light dark:text-text-muted text-[10px] sm:text-xs">Air Quality Management - Delhi NCR</span>
             </div>
           </Link>
-          <div className="relative hidden lg:flex items-center">
-            <span className="material-symbols-outlined absolute left-3 text-text-muted-light dark:text-text-muted">search</span>
-            <input className="bg-background-light dark:bg-surface-dark/80 border border-border-light dark:border-border-dark rounded-lg py-2 pl-10 pr-4 text-text-dark dark:text-text-light placeholder-text-muted-light dark:placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary-light-theme/50 dark:focus:ring-primary/50 w-64 lg:w-80" placeholder="Search any location..." type="text" />
-            <span className="material-symbols-outlined absolute right-3 text-text-muted-light dark:text-text-muted cursor-pointer hover:text-primary-light-theme dark:hover:text-primary">my_location</span>
+          <div className="relative hidden lg:flex items-center" ref={searchRef}>
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted-light dark:text-text-muted">search</span>
+              <input
+                className="bg-background-light dark:bg-surface-dark/80 border border-border-light dark:border-border-dark rounded-lg py-2 pl-10 pr-10 text-text-dark dark:text-text-light placeholder-text-muted-light dark:placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary-light-theme/50 dark:focus:ring-primary/50 w-64 lg:w-80"
+                placeholder="Search any location..."
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setIsSearchOpen(e.target.value.length > 0);
+                }}
+                onFocus={() => searchQuery.length > 0 && setIsSearchOpen(true)}
+                aria-label="Search locations"
+                aria-expanded={isSearchOpen}
+                aria-controls="search-results"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setIsSearchOpen(false);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted-light dark:text-text-muted hover:text-text-dark dark:hover:text-white transition-colors"
+                  aria-label="Clear search"
+                >
+                  <span className="material-symbols-outlined text-lg">close</span>
+                </button>
+              )}
+              {!searchQuery && (
+                <button
+                  type="button"
+                  onClick={handleMyLocationClick}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${location.isLoading
+                    ? 'text-primary-light-theme dark:text-primary animate-pulse'
+                    : isLocationBased
+                      ? 'text-primary-light-theme dark:text-primary'
+                      : 'text-text-muted-light dark:text-text-muted hover:text-primary-light-theme dark:hover:text-primary'
+                    }`}
+                  aria-label={location.isLoading ? 'Getting location...' : isLocationBased ? 'Click to reset to Delhi AQI' : 'Use my location'}
+                  title={location.isLoading ? 'Getting location...' : isLocationBased ? `Showing AQI for ${location.name || 'your location'} - Click to reset to Delhi` : 'Use my location for AQI'}
+                >
+                  <span className="material-symbols-outlined">{location.isLoading ? 'sync' : 'my_location'}</span>
+                </button>
+              )}
+            </form>
+
+            {/* Search Results Dropdown */}
+            {isSearchOpen && (
+              <div
+                id="search-results"
+                className="absolute top-full left-0 right-0 mt-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl shadow-xl z-[60] overflow-hidden max-h-96 overflow-y-auto"
+              >
+                {filteredStations.length > 0 ? (
+                  <div className="py-1">
+                    <div className="px-3 py-2 text-xs font-semibold text-text-muted-light dark:text-text-muted uppercase border-b border-border-light dark:border-border-dark">
+                      Stations ({filteredStations.length})
+                    </div>
+                    {filteredStations.map((station) => {
+                      const status = getAqiStatus(station.aqi);
+                      const color = getAqiColor(status);
+                      return (
+                        <button
+                          key={station.id}
+                          onClick={() => handleStationSelect(station.id)}
+                          className="w-full px-4 py-3 text-left hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-between gap-3 transition-colors"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-text-dark dark:text-white text-sm truncate">
+                              {station.name}
+                            </div>
+                            <div className="text-xs text-text-muted-light dark:text-text-muted truncate flex items-center gap-1">
+                              <span className="material-symbols-outlined text-xs">location_on</span>
+                              {station.location}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span
+                              className="px-2 py-1 rounded text-xs font-bold"
+                              style={{
+                                backgroundColor: `${color}20`,
+                                color: color
+                              }}
+                            >
+                              AQI {station.aqi}
+                            </span>
+                            <span className="material-symbols-outlined text-text-muted-light dark:text-text-muted text-sm">arrow_forward</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                    <div className="px-3 py-2 text-xs text-text-muted-light dark:text-text-muted border-t border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark">
+                      Press Enter to view on map
+                    </div>
+                  </div>
+                ) : searchQuery.trim() ? (
+                  <div className="px-4 py-6 text-center">
+                    <span className="material-symbols-outlined text-3xl text-text-muted-light dark:text-text-muted mb-2">search_off</span>
+                    <p className="text-sm text-text-muted-light dark:text-text-muted">
+                      No stations found for &quot;{searchQuery}&quot;
+                    </p>
+                    <button
+                      onClick={handleSearchSubmit}
+                      className="mt-2 text-xs text-primary-light-theme dark:text-primary hover:underline"
+                    >
+                      Search on map instead
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-4 md:gap-6">

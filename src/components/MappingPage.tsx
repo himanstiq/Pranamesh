@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { aqiStations as mockStations, busRoutes } from '@/data/mock-data';
 import { getAqiColor, getAqiStatus, getAqiLabel } from '@/utils/aqi-utils';
@@ -38,6 +39,7 @@ const aqiScale = [
 ];
 
 const MappingPage = () => {
+    const searchParams = useSearchParams();
     const [viewMode, setViewMode] = useState<ViewMode>('aqi');
     const [showViewDropdown, setShowViewDropdown] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -54,6 +56,24 @@ const MappingPage = () => {
 
     // System settings for manual mode
     const { settings } = useSystemSettings();
+
+    // Handle URL parameters for station selection (from header search)
+    useEffect(() => {
+        const stationId = searchParams.get('station');
+        const search = searchParams.get('search');
+
+        if (stationId) {
+            // Find and select the station from URL parameter
+            const station = stations.find(s => s.id === stationId);
+            if (station) {
+                setSelectedStation(station);
+                setSidebarOpen(true);
+            }
+        } else if (search) {
+            // Set the search query from URL parameter
+            setSearchQuery(search);
+        }
+    }, [searchParams, stations]);
 
     // Calculate average AQI for Delhi
     const averageAqi = useMemo(() => {

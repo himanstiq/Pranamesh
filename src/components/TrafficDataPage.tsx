@@ -1,15 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { aqiStations, trafficZones } from '@/data/mock-data';
 import { getAqiStatus, getAqiColor, getAqiLabel } from '@/utils/aqi-utils';
 import { BarChart3, Filter, MapPin, AlertTriangle, Factory, Car, Search } from 'lucide-react';
+import AnimatedNumber from './AnimatedNumber';
 
 type FilterType = 'all' | 'hazardous' | 'industrial' | 'traffic';
 
 const TrafficDataPage = () => {
     const [filter, setFilter] = useState<FilterType>('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [headerVisible, setHeaderVisible] = useState(false);
+
+    // Entrance animation on mount
+    useEffect(() => {
+        setHeaderVisible(true);
+    }, []);
 
     const filteredStations = aqiStations.filter((station) => {
         if (searchQuery && !station.name.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -70,29 +77,57 @@ const TrafficDataPage = () => {
                 </div>
             </div>
 
-            {/* Stats Summary */}
+            {/* Stats Summary with 3D Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 md:gap-8 mb-8 sm:mb-12">
-                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                <div
+                    className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer"
+                    style={{
+                        opacity: headerVisible ? 1 : 0,
+                        transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                        transition: 'all 0.6s ease-out 0.1s',
+                    }}
+                >
                     <p className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-red-500 mb-2">
-                        {aqiStations.filter(s => s.aqi > 300).length}
+                        <AnimatedNumber value={aqiStations.filter(s => s.aqi > 300).length} duration={1000} />
                     </p>
                     <p className="text-sm text-gray-400">Hazardous Zones</p>
                 </div>
-                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                <div
+                    className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer"
+                    style={{
+                        opacity: headerVisible ? 1 : 0,
+                        transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                        transition: 'all 0.6s ease-out 0.2s',
+                    }}
+                >
                     <p className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-purple-500 mb-1 sm:mb-2">
-                        {aqiStations.filter(s => s.aqi > 200 && s.aqi <= 300).length}
+                        <AnimatedNumber value={aqiStations.filter(s => s.aqi > 200 && s.aqi <= 300).length} duration={1000} delay={100} />
                     </p>
                     <p className="text-xs sm:text-sm text-gray-400">Severe Zones</p>
                 </div>
-                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                <div
+                    className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer"
+                    style={{
+                        opacity: headerVisible ? 1 : 0,
+                        transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                        transition: 'all 0.6s ease-out 0.3s',
+                    }}
+                >
                     <p className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-amber-500 mb-1 sm:mb-2">
-                        {aqiStations.filter(s => s.type === 'industrial').length}
+                        <AnimatedNumber value={aqiStations.filter(s => s.type === 'industrial').length} duration={1000} delay={200} />
                     </p>
                     <p className="text-xs sm:text-sm text-gray-400">Industrial Areas</p>
                 </div>
-                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                <div
+                    className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer"
+                    style={{
+                        opacity: headerVisible ? 1 : 0,
+                        transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                        transition: 'all 0.6s ease-out 0.4s',
+                    }}
+                >
                     <p className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-indigo-400 mb-1 sm:mb-2">
-                        {trafficZones.reduce((acc, z) => acc + z.recommendedDevices, 0)}
+                        <AnimatedNumber value={trafficZones.reduce((acc, z) => acc + z.recommendedDevices, 0)} duration={1000} delay={300} />
                     </p>
                     <p className="text-xs sm:text-sm text-gray-400">Devices Recommended</p>
                 </div>
@@ -171,15 +206,23 @@ const TrafficDataPage = () => {
             <div>
                 <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 md:mb-8 text-text-dark dark:text-white">Traffic Hotspot Zones</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-                    {trafficZones.map((zone) => (
-                        <div key={zone.id} className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8">
+                    {trafficZones.map((zone, index) => (
+                        <div
+                            key={zone.id}
+                            className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-5 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer"
+                            style={{
+                                opacity: headerVisible ? 1 : 0,
+                                transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                                transition: `all 0.6s ease-out ${0.1 + index * 0.1}s`,
+                            }}
+                        >
                             <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 text-text-dark dark:text-white">{zone.name}</h3>
                             <p className="text-xs sm:text-sm text-text-muted-light dark:text-text-muted mb-4 sm:mb-6">{zone.area}</p>
                             <div className="space-y-3 sm:space-y-4">
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-400">Avg AQI</span>
                                     <span className="font-display text-lg font-bold" style={{ color: getAqiColor(getAqiStatus(zone.avgAqi)) }}>
-                                        {zone.avgAqi}
+                                        <AnimatedNumber value={zone.avgAqi} duration={1000} delay={index * 100} />
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
@@ -197,7 +240,7 @@ const TrafficDataPage = () => {
                                 </div>
                                 <div className="pt-4 mt-4 border-t border-white/10 flex justify-between items-center">
                                     <span className="text-gray-400">Recommended Devices</span>
-                                    <span className="bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded text-sm font-bold">
+                                    <span className="bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded text-sm font-bold animate-data-pulse">
                                         {zone.recommendedDevices}
                                     </span>
                                 </div>

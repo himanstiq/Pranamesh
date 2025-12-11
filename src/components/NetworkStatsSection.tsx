@@ -121,6 +121,105 @@ const deploymentOverviewData = {
     maxValue: 500,
 };
 
+// 3D Stat Card Component
+interface StatCardProps {
+    stat: typeof statsData[0];
+    index: number;
+}
+
+function StatCard3D({ stat, index }: StatCardProps) {
+    const cardRef = useRef<HTMLDivElement>(null);
+    const [transform, setTransform] = useState('perspective(800px) rotateX(0deg) rotateY(0deg)');
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setVisible(true), index * 80);
+        return () => clearTimeout(timer);
+    }, [index]);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const card = cardRef.current;
+        if (!card) return;
+
+        const rect = card.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const rotateX = ((e.clientY - centerY) / (rect.height / 2)) * -6;
+        const rotateY = ((e.clientX - centerX) / (rect.width / 2)) * 6;
+
+        setTransform(`perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(8px)`);
+    };
+
+    const handleMouseLeave = () => {
+        setTransform('perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0px)');
+    };
+
+    const isActive = transform.includes('translateZ(8px)');
+
+    return (
+        <div
+            ref={cardRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            className="flex flex-col gap-3 p-5 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark cursor-pointer group card-shimmer"
+            style={{
+                opacity: visible ? 1 : 0,
+                transform: visible ? transform : 'perspective(800px) translateY(30px) scale(0.95)',
+                transformStyle: 'preserve-3d',
+                transition: visible
+                    ? 'transform 0.12s ease-out, box-shadow 0.3s ease, opacity 0.6s ease-out'
+                    : 'transform 0.6s ease-out, opacity 0.6s ease-out',
+                boxShadow: isActive
+                    ? '0 20px 40px -10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(99, 102, 241, 0.1)'
+                    : '0 2px 10px rgba(0, 0, 0, 0.05)',
+            }}
+        >
+            <div className="flex items-center gap-3">
+                <span
+                    className={`material-symbols-outlined text-2xl ${stat.color}`}
+                    style={{
+                        transform: isActive ? 'scale(1.2) translateZ(20px)' : 'scale(1)',
+                        transition: 'transform 0.15s ease-out',
+                    }}
+                >
+                    {stat.icon}
+                </span>
+                <span className="text-xs font-medium text-text-muted-light dark:text-text-muted uppercase tracking-wide">
+                    {stat.label}
+                </span>
+            </div>
+            <div className="flex items-baseline gap-2">
+                <span
+                    className={`text-3xl font-bold ${stat.color}`}
+                    style={{
+                        transform: isActive ? 'translateZ(15px)' : 'translateZ(0)',
+                        transition: 'transform 0.15s ease-out',
+                    }}
+                >
+                    <AnimatedNumber
+                        value={stat.numericValue}
+                        duration={1500}
+                        delay={index * 100}
+                        suffix={stat.suffix}
+                        decimals={'decimals' in stat ? (stat.decimals as number) : 0}
+                    />
+                </span>
+                {stat.status && (
+                    <span className="text-sm font-semibold text-aqi-severe bg-aqi-severe/10 px-2 py-0.5 rounded animate-data-pulse">
+                        {stat.status}
+                    </span>
+                )}
+            </div>
+            {stat.description && (
+                <p className="text-xs text-text-muted-light dark:text-text-muted line-clamp-2">
+                    {stat.description}
+                </p>
+            )}
+        </div>
+    );
+}
+
 export default function NetworkStatsSection() {
     const { theme } = useTheme();
 
@@ -129,6 +228,11 @@ export default function NetworkStatsSection() {
     const [deploymentChartVisible, setDeploymentChartVisible] = useState(false);
     const pollutionChartRef = useRef<HTMLDivElement>(null);
     const deploymentChartRef = useRef<HTMLDivElement>(null);
+    const [headerVisible, setHeaderVisible] = useState(false);
+
+    useEffect(() => {
+        setHeaderVisible(true);
+    }, []);
 
     // Intersection Observer for chart animations
     useEffect(() => {
@@ -268,62 +372,43 @@ export default function NetworkStatsSection() {
     return (
         <div className="px-4 sm:px-6 md:px-8 lg:px-12 py-16 @container">
             <div className="mx-auto max-w-7xl">
-                {/* Section Header */}
+                {/* Section Header with Animation */}
                 <div className="flex flex-col gap-2 mb-10">
-                    <h2 className="text-3xl font-bold text-text-dark dark:text-white">
+                    <h2
+                        className="text-3xl font-bold text-text-dark dark:text-white"
+                        style={{
+                            opacity: headerVisible ? 1 : 0,
+                            transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                            transition: 'all 0.8s ease-out',
+                        }}
+                    >
                         Network Overview
                     </h2>
-                    <p className="text-text-muted-light dark:text-text-muted">
+                    <p
+                        className="text-text-muted-light dark:text-text-muted"
+                        style={{
+                            opacity: headerVisible ? 1 : 0,
+                            transform: headerVisible ? 'translateY(0)' : 'translateY(20px)',
+                            transition: 'all 0.8s ease-out 0.15s',
+                        }}
+                    >
                         Real-time statistics from the PranaMesh monitoring network across Delhi-NCR
                     </p>
                 </div>
 
-                {/* Statistics Grid */}
+                {/* Statistics Grid with 3D Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-12">
                     {statsData.map((stat, index) => (
-                        <div
-                            key={index}
-                            className="flex flex-col gap-3 p-5 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover-lift hover-glow transition-all duration-300 group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <span className={`material-symbols-outlined text-2xl ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
-                                    {stat.icon}
-                                </span>
-                                <span className="text-xs font-medium text-text-muted-light dark:text-text-muted uppercase tracking-wide">
-                                    {stat.label}
-                                </span>
-                            </div>
-                            <div className="flex items-baseline gap-2">
-                                <span className={`text-3xl font-bold ${stat.color}`}>
-                                    <AnimatedNumber
-                                        value={stat.numericValue}
-                                        duration={1500}
-                                        delay={index * 100}
-                                        suffix={stat.suffix}
-                                        decimals={'decimals' in stat ? (stat.decimals as number) : 0}
-                                    />
-                                </span>
-                                {stat.status && (
-                                    <span className="text-sm font-semibold text-aqi-severe bg-aqi-severe/10 px-2 py-0.5 rounded">
-                                        {stat.status}
-                                    </span>
-                                )}
-                            </div>
-                            {stat.description && (
-                                <p className="text-xs text-text-muted-light dark:text-text-muted line-clamp-2">
-                                    {stat.description}
-                                </p>
-                            )}
-                        </div>
+                        <StatCard3D key={index} stat={stat} index={index} />
                     ))}
                 </div>
 
                 {/* Charts Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Pollution Overview Chart */}
-                    <div ref={pollutionChartRef} className="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 hover-lift transition-all duration-300">
+                    <div ref={pollutionChartRef} className="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 hover-lift transition-all duration-300 card-shimmer">
                         <div className="flex items-center gap-3 mb-6">
-                            <span className="material-symbols-outlined text-2xl text-red-500 dark:text-red-400">
+                            <span className="material-symbols-outlined text-2xl text-red-500 dark:text-red-400 animate-data-pulse">
                                 factory
                             </span>
                             <h3 className="text-xl font-bold text-text-dark dark:text-white">
@@ -349,9 +434,9 @@ export default function NetworkStatsSection() {
                     </div>
 
                     {/* Deployment Overview Chart */}
-                    <div ref={deploymentChartRef} className="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 hover-lift transition-all duration-300">
+                    <div ref={deploymentChartRef} className="rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-6 hover-lift transition-all duration-300 card-shimmer">
                         <div className="flex items-center gap-3 mb-6">
-                            <span className="material-symbols-outlined text-2xl text-primary-light-theme dark:text-primary">
+                            <span className="material-symbols-outlined text-2xl text-primary-light-theme dark:text-primary animate-data-pulse">
                                 deployed_code
                             </span>
                             <h3 className="text-xl font-bold text-text-dark dark:text-white">

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { FirebaseAQIProvider } from "@/components/FirebaseAQIProvider";
 import { AuthProvider } from "@/lib/AuthContext";
 import { SystemSettingsProvider } from "@/lib/SystemSettingsContext";
+import { LocationProvider } from "@/lib/LocationContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -81,17 +82,19 @@ export default function RootLayout({
                 <ThemeProvider>
                     <AuthProvider>
                         <SystemSettingsProvider>
-                            <FirebaseAQIProvider>
-                                <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
-                                    <Header />
-                                    <div className="layout-container flex h-full grow flex-col">
-                                        <ErrorBoundary>
-                                            {children}
-                                        </ErrorBoundary>
+                            <LocationProvider>
+                                <FirebaseAQIProvider>
+                                    <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+                                        <Header />
+                                        <div className="layout-container flex h-full grow flex-col">
+                                            <ErrorBoundary>
+                                                {children}
+                                            </ErrorBoundary>
+                                        </div>
+                                        <Footer />
                                     </div>
-                                    <Footer />
-                                </div>
-                            </FirebaseAQIProvider>
+                                </FirebaseAQIProvider>
+                            </LocationProvider>
                         </SystemSettingsProvider>
                     </AuthProvider>
                 </ThemeProvider>

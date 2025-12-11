@@ -845,3 +845,626 @@ html:not(.dark) .day-gradient-text {
 .parallax-fast {
   will-change: transform;
 }
+
+/* ============================
+   MASCOT DYNAMIC ANIMATIONS
+   ============================ */
+
+/* Coughing Animation - simulates distressed breathing/coughing */
+@keyframes cough {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  15% {
+    transform: translateY(2px) rotate(-1deg);
+  }
+
+  30% {
+    transform: translateY(-3px) rotate(2deg);
+  }
+
+  45% {
+    transform: translateY(4px) rotate(-1deg);
+  }
+
+  60% {
+    transform: translateY(-2px) rotate(1deg);
+  }
+
+  75% {
+    transform: translateY(2px) rotate(0deg);
+  }
+}
+
+/* Eye Blinking Animation */
+@keyframes eyeBlink {
+
+  0%,
+  90%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* Natural Body Sway - standing idle animation */
+@keyframes bodySway {
+
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+
+  25% {
+    transform: translateX(-2px) rotate(-0.5deg);
+  }
+
+  50% {
+    transform: translateX(0) rotate(0.3deg);
+  }
+
+  75% {
+    transform: translateX(2px) rotate(0.5deg);
+  }
+}
+
+/* Intense Breathing - for poor AQI */
+@keyframes breatheIntense {
+
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+
+  50% {
+    transform: scale(1.02) translateY(-2px);
+  }
+}
+
+/* Arm Shake - distress/suffering */
+@keyframes armShake {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-5deg);
+  }
+
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+/* Head movement for coughing */
+@keyframes headCough {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  20% {
+    transform: translateY(3px) rotate(5deg);
+  }
+
+  40% {
+    transform: translateY(-2px) rotate(-3deg);
+  }
+
+  60% {
+    transform: translateY(4px) rotate(4deg);
+  }
+
+  80% {
+    transform: translateY(-1px) rotate(-2deg);
+  }
+}
+
+/* ============================
+   POLLUTION PARTICLE ANIMATIONS
+   ============================ */
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.8;
+  }
+
+  90% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateY(-150px) translateX(30px) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes particleDrift {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(20px);
+  }
+}
+
+@keyframes hazeShift {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateX(0) scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translateX(-20px) scale(1.05);
+  }
+}
+
+/* ============================
+   3D CARD EFFECTS
+   ============================ */
+
+/* 3D Card Container */
+.card-3d-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* 3D Card Tilt Effect */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  backface-visibility: hidden;
+}
+
+.card-3d:hover {
+  transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) translateZ(20px);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 30px rgba(var(--color-primary), 0.1);
+}
+
+/* 3D Depth Layers */
+.depth-layer-1 {
+  transform: translateZ(10px);
+}
+
+.depth-layer-2 {
+  transform: translateZ(20px);
+}
+
+.depth-layer-3 {
+  transform: translateZ(30px);
+}
+
+/* 3D Floating Effect */
+@keyframes float3D {
+
+  0%,
+  100% {
+    transform: translateY(0) translateZ(0) rotateX(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) translateZ(15px) rotateX(2deg);
+  }
+}
+
+.animate-float-3d {
+  animation: float3D 4s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+
+/* ============================
+   DATA GLOW & PULSE EFFECTS
+   ============================ */
+
+@keyframes dataGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+    filter: brightness(1);
+  }
+
+  50% {
+    box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes dataPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+@keyframes numberCountUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Card Shimmer Premium Effect */
+@keyframes cardShimmerGlow {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.card-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%);
+  background-size: 200% 100%;
+  animation: cardShimmerGlow 3s linear infinite;
+  pointer-events: none;
+}
+
+/* ============================
+   MASCOT ANIMATION UTILITIES
+   ============================ */
+
+.animate-cough {
+  animation: cough 1.5s ease-in-out infinite;
+}
+
+.animate-cough-severe {
+  animation: cough 0.8s ease-in-out infinite;
+}
+
+.animate-eye-blink {
+  animation: eyeBlink 4s ease-in-out infinite;
+}
+
+.animate-body-sway {
+  animation: bodySway 6s ease-in-out infinite;
+}
+
+.animate-breathe-intense {
+  animation: breatheIntense 2s ease-in-out infinite;
+}
+
+.animate-arm-shake {
+  animation: armShake 0.5s ease-in-out infinite;
+}
+
+.animate-head-cough {
+  animation: headCough 1.2s ease-in-out infinite;
+}
+
+/* ============================
+   PARTICLE ANIMATION UTILITIES
+   ============================ */
+
+.animate-particle-float {
+  animation: particleFloat 8s linear infinite;
+}
+
+.animate-particle-drift {
+  animation: particleDrift 4s ease-in-out infinite;
+}
+
+.animate-haze {
+  animation: hazeShift 10s ease-in-out infinite;
+}
+
+/* ============================
+   DATA ANIMATION UTILITIES
+   ============================ */
+
+.animate-data-glow {
+  animation: dataGlow 2s ease-in-out infinite;
+}
+
+.animate-data-pulse {
+  animation: dataPulse 2s ease-in-out infinite;
+}
+
+/* ============================
+   3D INTERACTIVE CARD HOVER
+   ============================ */
+
+.interactive-3d-card {
+  transition: transform 0.15s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Inner elements pop forward on hover */
+.interactive-3d-card:hover .card-content {
+  transform: translateZ(30px);
+}
+
+.interactive-3d-card:hover .card-icon {
+  transform: translateZ(50px) scale(1.1);
+}
+
+/* ============================
+   REDUCE MOTION SUPPORT
+   ============================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .animate-cough,
+  .animate-cough-severe,
+  .animate-eye-blink,
+  .animate-body-sway,
+  .animate-breathe-intense,
+  .animate-arm-shake,
+  .animate-head-cough,
+  .animate-particle-float,
+  .animate-particle-drift,
+  .animate-haze,
+  .animate-float-3d,
+  .animate-data-glow,
+  .animate-data-pulse,
+  .card-shimmer::after,
+  .liquid-glass,
+  .liquid-glass-bubble {
+    animation: none !important;
+  }
+
+  .card-3d:hover {
+    transform: none;
+  }
+}
+
+/* ============================
+   LIQUID GLASS ANIMATION
+   ============================ */
+
+/* Liquid glass shimmer effect */
+@keyframes liquidGlassShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Liquid refraction/wobble effect */
+@keyframes liquidRefraction {
+
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+    filter: blur(0px);
+  }
+
+  25% {
+    transform: scale(1.01) rotate(0.3deg);
+    filter: blur(0.2px);
+  }
+
+  50% {
+    transform: scale(0.99) rotate(-0.2deg);
+    filter: blur(0.1px);
+  }
+
+  75% {
+    transform: scale(1.005) rotate(0.1deg);
+    filter: blur(0.15px);
+  }
+}
+
+/* Floating bubble animation */
+@keyframes liquidBubble {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: translateY(-20px) scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+/* Subtle color shift for glass effect */
+@keyframes liquidColorShift {
+
+  0%,
+  100% {
+    filter: hue-rotate(0deg) saturate(1);
+  }
+
+  50% {
+    filter: hue-rotate(10deg) saturate(1.1);
+  }
+}
+
+/* Glow pulse for glass highlight */
+@keyframes liquidGlow {
+
+  0%,
+  100% {
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      inset 0 0 60px rgba(255, 255, 255, 0.05);
+  }
+
+  50% {
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.15),
+      inset 0 0 80px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Main liquid glass container */
+.liquid-glass {
+  position: relative;
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(240, 248, 255, 0.85) 50%,
+      rgba(224, 242, 254, 0.9) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  overflow: hidden;
+  animation: liquidGlow 4s ease-in-out infinite;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Shimmer overlay */
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%);
+  background-size: 200% 100%;
+  animation: liquidGlassShimmer 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Refraction layer */
+.liquid-glass::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at center,
+      rgba(255, 255, 255, 0.3) 0%,
+      transparent 60%);
+  animation: liquidRefraction 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 3D hover effect for liquid glass */
+.liquid-glass-3d {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.2s ease-out, box-shadow 0.3s ease;
+}
+
+.liquid-glass-3d:hover {
+  transform: translateY(-8px) rotateX(2deg);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 0 30px rgba(56, 189, 248, 0.1),
+    inset 0 0 60px rgba(255, 255, 255, 0.15);
+}
+
+/* Floating bubble elements */
+.liquid-glass-bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 70%);
+  animation: liquidBubble 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Weather icon animation */
+@keyframes weatherIconFloat {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-5px) scale(1.05);
+  }
+}
+
+.weather-icon-animated {
+  animation: weatherIconFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(56, 189, 248, 0.3));
+}
+
+/* Temperature number glow */
+@keyframes tempGlow {
+
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  }
+
+  50% {
+    text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+  }
+}
+
+.temp-text-glow {
+  animation: tempGlow 3s ease-in-out infinite;
+}
+
+/* Weather stat cards */
+.weather-stat-card {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.weather-stat-card:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}

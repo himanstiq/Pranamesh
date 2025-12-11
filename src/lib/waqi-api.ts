@@ -229,6 +229,66 @@ export function convertWAQIToStations(waqiData: WAQIResponse): AQIStation[] {
 }
 
 /**
+ * Fetch AQI data by geographic coordinates
+ * Uses WAQI's geo endpoint to find nearest monitoring station
+ */
+export async function fetchAQIByLocation(lat: number, lng: number): Promise<WAQIResponse | null> {
+    const token = process.env.WAQI_API_TOKEN || DEMO_TOKEN;
+
+    try {
+        const url = `https://api.waqi.info/feed/geo:${lat};${lng}/?token=${token}`;
+        console.log(`Fetching AQI for location: ${lat}, ${lng}`);
+
+        const response = await fetch(url, {
+            next: { revalidate: 60 },
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            console.error(`WAQI geo API error: ${response.status}`);
+            return null;
+        }
+
+        const rawData = await response.json();
+
+        if (rawData.status !== 'ok') {
+            console.error('WAQI geo API returned error:', rawData);
+            return null;
+        }
+
+        const data = rawData.data;
+
+        const result: WAQIResponse = {
+            aqi: data.aqi,
+            pm25: data.iaqi?.pm25?.v || Math.round(data.aqi * 0.7),
+            pm10: data.iaqi?.pm10?.v || Math.round(data.aqi * 1.1),
+            temperature: data.iaqi?.t?.v || 20,
+            humidity: data.iaqi?.h?.v || 50,
+            windSpeed: data.iaqi?.w?.v || 5,
+            pressure: data.iaqi?.p?.v || 1013,
+            cityName: data.city?.name || 'Your Location',
+            lastUpdated: data.time?.iso || new Date().toISOString(),
+            stations: [{
+                name: data.city?.name || 'Nearest Station',
+                aqi: data.aqi,
+                pm25: data.iaqi?.pm25?.v || Math.round(data.aqi * 0.7),
+                pm10: data.iaqi?.pm10?.v || Math.round(data.aqi * 1.1),
+                lat: data.city?.geo?.[0] || lat,
+                lng: data.city?.geo?.[1] || lng,
+            }],
+        };
+
+        console.log(`WAQI Geo API: Location AQI = ${result.aqi}, City = ${result.cityName}`);
+        return result;
+    } catch (error) {
+        console.error('Error fetching WAQI geo data:', error);
+        return null;
+    }
+}
+
+/**
  * Clear WAQI cache
  */
 export function clearWAQICache(): void {

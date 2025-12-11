@@ -341,8 +341,8 @@ const TimestampPage = () => {
                                                         key={station.id}
                                                         onClick={() => handleStationSelect(station.id)}
                                                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedStation === station.id
-                                                                ? 'bg-primary-light-theme/10 dark:bg-primary/20 text-primary-light-theme dark:text-primary'
-                                                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-text-dark dark:text-white'
+                                                            ? 'bg-primary-light-theme/10 dark:bg-primary/20 text-primary-light-theme dark:text-primary'
+                                                            : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-text-dark dark:text-white'
                                                             }`}
                                                         role="option"
                                                         aria-selected={selectedStation === station.id}
@@ -366,8 +366,8 @@ const TimestampPage = () => {
                                                         key={station.id}
                                                         onClick={() => handleStationSelect(station.id)}
                                                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedStation === station.id
-                                                                ? 'bg-primary-light-theme/10 dark:bg-primary/20 text-primary-light-theme dark:text-primary'
-                                                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-text-dark dark:text-white'
+                                                            ? 'bg-primary-light-theme/10 dark:bg-primary/20 text-primary-light-theme dark:text-primary'
+                                                            : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-text-dark dark:text-white'
                                                             }`}
                                                         role="option"
                                                         aria-selected={selectedStation === station.id}
@@ -391,8 +391,8 @@ const TimestampPage = () => {
                                                         key={station.id}
                                                         onClick={() => handleStationSelect(station.id)}
                                                         className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${selectedStation === station.id
-                                                                ? 'bg-primary-light-theme/10 dark:bg-primary/20 text-primary-light-theme dark:text-primary'
-                                                                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-text-dark dark:text-white'
+                                                            ? 'bg-primary-light-theme/10 dark:bg-primary/20 text-primary-light-theme dark:text-primary'
+                                                            : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-text-dark dark:text-white'
                                                             }`}
                                                         role="option"
                                                         aria-selected={selectedStation === station.id}
@@ -583,7 +583,7 @@ const TimestampPage = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 md:gap-8 mb-8 sm:mb-14">
-                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer">
                         <div className="flex items-center justify-between mb-2 sm:mb-4">
                             <span className="text-text-muted-light dark:text-text-muted text-xs sm:text-sm">Current AQI</span>
                             <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary-light-theme dark:text-primary" />
@@ -594,7 +594,7 @@ const TimestampPage = () => {
                         <p className="text-xs sm:text-sm text-text-muted-light dark:text-text-muted">{stationName}</p>
                     </div>
 
-                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer">
                         <div className="flex items-center justify-between mb-2 sm:mb-4">
                             <span className="text-text-muted-light dark:text-text-muted text-xs sm:text-sm">
                                 {timeRange === '24h' ? 'Today\'s Avg' : timeRange === '7d' ? '7-Day Avg' : timeRange === '30d' ? '30-Day Avg' : 'Period Avg'}
@@ -613,7 +613,7 @@ const TimestampPage = () => {
                         </p>
                     </div>
 
-                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer">
                         <span className="text-text-muted-light dark:text-text-muted block mb-2 sm:mb-4 text-xs sm:text-sm">Peak AQI</span>
                         <p className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-red-400 mb-1 sm:mb-2">
                             <AnimatedNumber value={stats.peakAqi} duration={1200} delay={200} />
@@ -623,7 +623,7 @@ const TimestampPage = () => {
                         </p>
                     </div>
 
-                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
+                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer">
                         <span className="text-text-muted-light dark:text-text-muted block mb-2 sm:mb-4 text-xs sm:text-sm">Min AQI</span>
                         <p className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-green-400 mb-1 sm:mb-2">
                             <AnimatedNumber value={stats.minAqi} duration={1200} delay={300} />
