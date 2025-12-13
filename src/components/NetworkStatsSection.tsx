@@ -231,6 +231,7 @@ export default function NetworkStatsSection() {
     const [headerVisible, setHeaderVisible] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: trigger entrance animation on mount
         setHeaderVisible(true);
     }, []);
 

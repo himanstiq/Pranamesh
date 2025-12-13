@@ -6,6 +6,7 @@ import { getAqiStatus, getAqiLabel } from '@/utils/aqi-utils';
 import { useSystemSettings } from '@/lib/SystemSettingsContext';
 import { useFirebaseAQI } from '@/components/FirebaseAQIProvider';
 import { useLocation } from '@/lib/LocationContext';
+import AnimatedNumber from './AnimatedNumber';
 
 interface AQIData {
     aqi: number;
@@ -27,6 +28,19 @@ interface WeatherData {
     isDayTime?: boolean;
     feelsLike?: number;
 }
+
+// Default weather values for Delhi (used while loading)
+const DEFAULT_WEATHER: WeatherData = {
+    temperature: 18,
+    humidity: 65,
+    windSpeed: 8,
+    source: 'default',
+    weatherText: 'Partly Cloudy',
+    uvIndex: 3,
+    uvIndexText: 'Moderate',
+    isDayTime: true,
+    feelsLike: 17,
+};
 
 // AQI status color from aqi.in (exact RGB values)
 function getAqiStatusColor(status: string): string {
@@ -269,6 +283,7 @@ function PollutionParticles({ aqiLevel = 'moderate' }: { aqiLevel?: string }) {
             delay: Math.random() * 8,
             duration: Math.random() * 4 + 6,
         }));
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: generate particles client-side to avoid hydration mismatch
         setParticles(newParticles);
     }, [particleCount]);
 
@@ -405,7 +420,7 @@ function AQIScale({ currentAqi }: { currentAqi: number }) {
 export default function AQIHeroDisplay() {
     const [aqiData, setAqiData] = useState<AQIData | null>(null);
     const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [_loading, setLoading] = useState(true);
     const [lastFetch, setLastFetch] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [locationName, setLocationName] = useState<string | null>(null);
@@ -415,7 +430,7 @@ export default function AQIHeroDisplay() {
     const { stationData, lastUpdate: firebaseLastUpdate, isConnected: firebaseConnected } = useFirebaseAQI();
 
     // Location context for location-based AQI
-    const { isLocationBased, locationAQI, location } = useLocation();
+    const { isLocationBased, locationAQI } = useLocation();
 
     // Effect for location-based AQI (priority when enabled)
     useEffect(() => {
@@ -522,6 +537,23 @@ export default function AQIHeroDisplay() {
             }
         };
 
+        fetchAQI(true);
+
+        const interval = setInterval(() => {
+            fetchAQI(false);
+        }, 60 * 1000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentional: only re-fetch when manual mode changes
+    }, [settings.manualMode]);
+
+    // Effect for Weather data - runs independently of AQI mode
+    useEffect(() => {
+        let isMounted = true;
+
         const fetchWeather = async () => {
             try {
                 const response = await fetch('/api/weather');
@@ -558,11 +590,9 @@ export default function AQIHeroDisplay() {
             }
         };
 
-        fetchAQI(true);
         fetchWeather();
 
         const interval = setInterval(() => {
-            fetchAQI(false);
             fetchWeather();
         }, 60 * 1000);
 
@@ -570,7 +600,7 @@ export default function AQIHeroDisplay() {
             isMounted = false;
             clearInterval(interval);
         };
-    }, [settings.manualMode]);
+    }, []);
 
     const getStatusColor = useCallback((status: string) => {
         switch (status) {
@@ -749,17 +779,23 @@ export default function AQIHeroDisplay() {
                                             </span>
                                             <div>
                                                 <p className="text-4xl sm:text-5xl font-bold text-gray-800 temp-text-glow font-display">
-                                                    {weatherData?.temperature ?? '--'}
+                                                    <AnimatedNumber
+                                                        value={weatherData?.temperature ?? DEFAULT_WEATHER.temperature}
+                                                        duration={800}
+                                                        formatWithCommas={false}
+                                                    />
                                                     <span className="text-2xl font-normal text-gray-600">°C</span>
                                                 </p>
                                                 <p className="text-gray-600 font-semibold text-sm sm:text-base">
-                                                    {weatherData?.weatherText ?? 'Loading...'}
+                                                    {weatherData?.weatherText ?? DEFAULT_WEATHER.weatherText}
                                                 </p>
-                                                {weatherData?.feelsLike && (
-                                                    <p className="text-gray-500 text-xs">
-                                                        Feels like {weatherData.feelsLike}°C
-                                                    </p>
-                                                )}
+                                                <p className="text-gray-500 text-xs">
+                                                    Feels like <AnimatedNumber
+                                                        value={weatherData?.feelsLike ?? DEFAULT_WEATHER.feelsLike ?? 17}
+                                                        duration={800}
+                                                        formatWithCommas={false}
+                                                    />°C
+                                                </p>
                                             </div>
                                         </div>
                                         <a
@@ -789,7 +825,13 @@ export default function AQIHeroDisplay() {
                                             </span>
                                             <div>
                                                 <p className="text-xs text-gray-500 font-semibold">Humidity</p>
-                                                <p className="font-bold text-gray-800 text-lg">{weatherData?.humidity ?? '--'}%</p>
+                                                <p className="font-bold text-gray-800 text-lg">
+                                                    <AnimatedNumber
+                                                        value={weatherData?.humidity ?? DEFAULT_WEATHER.humidity}
+                                                        duration={800}
+                                                        formatWithCommas={false}
+                                                    />%
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="weather-stat-card flex-1 flex items-center gap-2">
@@ -798,7 +840,13 @@ export default function AQIHeroDisplay() {
                                             </span>
                                             <div>
                                                 <p className="text-xs text-gray-500 font-semibold">Wind</p>
-                                                <p className="font-bold text-gray-800 text-lg">{weatherData?.windSpeed ?? '--'} <span className="text-xs font-normal">km/h</span></p>
+                                                <p className="font-bold text-gray-800 text-lg">
+                                                    <AnimatedNumber
+                                                        value={weatherData?.windSpeed ?? DEFAULT_WEATHER.windSpeed}
+                                                        duration={800}
+                                                        formatWithCommas={false}
+                                                    /> <span className="text-xs font-normal">km/h</span>
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="weather-stat-card flex-1 flex items-center gap-2">

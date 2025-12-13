@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 
 // Type for stat data
-interface StatData {
+interface _StatData {
   label: string;
   numericValue: number;
   suffix: string;
@@ -102,6 +102,7 @@ export default function CapabilitiesSection() {
   const [headerVisible, setHeaderVisible] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: trigger entrance animation on mount
     setHeaderVisible(true);
   }, []);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { aqiStations, trafficZones } from '@/data/mock-data';
 import { getAqiStatus, getAqiColor, getAqiLabel } from '@/utils/aqi-utils';
 import { BarChart3, Filter, MapPin, AlertTriangle, Factory, Car, Search } from 'lucide-react';
@@ -15,6 +15,7 @@ const TrafficDataPage = () => {
 
     // Entrance animation on mount
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: trigger entrance animation on mount
         setHeaderVisible(true);
     }, []);
 

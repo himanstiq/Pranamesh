@@ -17,7 +17,7 @@ export default function Header() {
   const [fontSize, setFontSize] = useState(100); // percentage: 90, 100, 110
 
   // Location context
-  const { location, requestLocation, clearLocation, isLocationBased, locationAQI } = useLocation();
+  const { location, requestLocation, clearLocation, isLocationBased } = useLocation();
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -229,7 +229,6 @@ export default function Header() {
                 }}
                 onFocus={() => searchQuery.length > 0 && setIsSearchOpen(true)}
                 aria-label="Search locations"
-                aria-expanded={isSearchOpen}
                 aria-controls="search-results"
               />
               {searchQuery && (

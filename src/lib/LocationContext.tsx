@@ -64,14 +64,8 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    // Fetch AQI when location changes
-    useEffect(() => {
-        if (location.lat && location.lng && location.isEnabled) {
-            fetchLocationAQI(location.lat, location.lng);
-        }
-    }, [location.lat, location.lng, location.isEnabled]);
-
-    const fetchLocationAQI = async (lat: number, lng: number) => {
+    // Fetch AQI data for a specific location
+    const fetchLocationAQI = useCallback(async (lat: number, lng: number) => {
         try {
             const response = await fetch(`/api/aqi/location?lat=${lat}&lng=${lng}`);
             const data = await response.json();
@@ -93,7 +87,14 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error('Failed to fetch location AQI:', error);
         }
-    };
+    }, []);
+
+    // Fetch AQI when location changes
+    useEffect(() => {
+        if (location.lat && location.lng && location.isEnabled) {
+            fetchLocationAQI(location.lat, location.lng);
+        }
+    }, [location.lat, location.lng, location.isEnabled, fetchLocationAQI]);
 
     const requestLocation = useCallback(async () => {
         if (!navigator.geolocation) {

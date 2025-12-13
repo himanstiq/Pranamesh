@@ -58,6 +58,7 @@ const MappingPage = () => {
     const { settings } = useSystemSettings();
 
     // Handle URL parameters for station selection (from header search)
+    /* eslint-disable react-hooks/set-state-in-effect -- Intentional: sync React state from URL search params */
     useEffect(() => {
         const stationId = searchParams.get('station');
         const search = searchParams.get('search');
@@ -74,6 +75,7 @@ const MappingPage = () => {
             setSearchQuery(search);
         }
     }, [searchParams, stations]);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     // Calculate average AQI for Delhi
     const averageAqi = useMemo(() => {
