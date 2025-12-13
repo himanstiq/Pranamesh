@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -33,8 +33,16 @@ interface TimestampBarChartProps {
     location?: string;
 }
 
+interface FormattedTime {
+    time: string;
+    date: string;
+}
+
 const TimestampBarChart = ({ data, location = 'AICTE Delhi' }: TimestampBarChartProps) => {
     const { theme } = useTheme();
+
+    // State for client-side formatted times (prevents hydration mismatch)
+    const [formattedTimes, setFormattedTimes] = useState<{ minTime: FormattedTime; maxTime: FormattedTime } | null>(null);
 
     // Calculate min and max AQI with timestamps
     const stats = useMemo(() => {
@@ -54,7 +62,18 @@ const TimestampBarChart = ({ data, location = 'AICTE Delhi' }: TimestampBarChart
             }
         });
 
-        const formatTime = (ts: string) => {
+        return {
+            min: minAqi,
+            max: maxAqi,
+            minTimestamp: minTime,
+            maxTimestamp: maxTime,
+        };
+    }, [data]);
+
+    // Format times client-side only to prevent hydration mismatch
+    useEffect(() => {
+        const formatTime = (ts: string): FormattedTime => {
+            if (!ts) return { time: '--', date: '--' };
             const date = new Date(ts);
             return {
                 time: date.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true }),
@@ -62,13 +81,11 @@ const TimestampBarChart = ({ data, location = 'AICTE Delhi' }: TimestampBarChart
             };
         };
 
-        return {
-            min: minAqi,
-            max: maxAqi,
-            minTime: formatTime(minTime),
-            maxTime: formatTime(maxTime),
-        };
-    }, [data]);
+        setFormattedTimes({
+            minTime: formatTime(stats.minTimestamp),
+            maxTime: formatTime(stats.maxTimestamp),
+        });
+    }, [stats.minTimestamp, stats.maxTimestamp]);
 
     // Generate 48-hour data (for a more complete visualization like the reference)
     const extendedData = useMemo(() => {
@@ -217,7 +234,7 @@ const TimestampBarChart = ({ data, location = 'AICTE Delhi' }: TimestampBarChart
                         <div>
                             <p className="text-sm font-semibold text-text-dark dark:text-white">Min.</p>
                             <p className="text-xs text-text-muted-light dark:text-text-muted">
-                                at {stats.minTime.time} on {stats.minTime.date}
+                                at {formattedTimes?.minTime.time ?? '--'} on {formattedTimes?.minTime.date ?? '--'}
                             </p>
                         </div>
                     </div>
@@ -230,7 +247,7 @@ const TimestampBarChart = ({ data, location = 'AICTE Delhi' }: TimestampBarChart
                         <div>
                             <p className="text-sm font-semibold text-text-dark dark:text-white">Max.</p>
                             <p className="text-xs text-text-muted-light dark:text-text-muted">
-                                at {stats.maxTime.time} on {stats.maxTime.date}
+                                at {formattedTimes?.maxTime.time ?? '--'} on {formattedTimes?.maxTime.date ?? '--'}
                             </p>
                         </div>
                     </div>

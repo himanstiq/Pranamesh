@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { getAqiStatus, getAqiColor } from '@/utils/aqi-utils';
 import AQIChart from './AQIChart';
 import TimestampBarChart from './TimestampBarChart';
@@ -133,6 +133,10 @@ const TimestampPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Animation states
+    const [headerVisible, setHeaderVisible] = useState(false);
+    const stationDropdownRef = useRef<HTMLDivElement>(null);
+
     // Filter stations based on search
     const filteredStations = useMemo(() => {
         const searchLower = stationSearch.toLowerCase();
@@ -218,6 +222,12 @@ const TimestampPage = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Entrance animation on mount
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: trigger entrance animation on mount
+        setHeaderVisible(true);
+    }, []);
+
     // Calculate stats with memoization
     const stats = useMemo(() => ({
         avgAqi: historicalData.length > 0
@@ -283,12 +293,33 @@ const TimestampPage = () => {
             <div className="flex flex-col gap-4 sm:gap-6 mb-8 sm:mb-12">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-primary-light-theme dark:text-primary" />
+                        <Clock
+                            className="w-6 h-6 sm:w-8 sm:h-8 text-primary-light-theme dark:text-primary"
+                            style={{
+                                opacity: headerVisible ? 1 : 0,
+                                transform: headerVisible ? 'scale(1) rotate(0deg)' : 'scale(0.5) rotate(-45deg)',
+                                transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                            }}
+                        />
                         <div>
-                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-0.5 sm:mb-1 text-text-dark dark:text-white">
+                            <h1
+                                className="text-xl sm:text-2xl md:text-3xl font-bold mb-0.5 sm:mb-1 text-text-dark dark:text-white"
+                                style={{
+                                    opacity: headerVisible ? 1 : 0,
+                                    transform: headerVisible ? 'translateY(0)' : 'translateY(20px)',
+                                    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s',
+                                }}
+                            >
                                 Historical Data & Timestamps
                             </h1>
-                            <p className="text-text-muted-light dark:text-text-muted text-sm sm:text-base md:text-lg">
+                            <p
+                                className="text-text-muted-light dark:text-text-muted text-sm sm:text-base md:text-lg"
+                                style={{
+                                    opacity: headerVisible ? 1 : 0,
+                                    transform: headerVisible ? 'translateY(0)' : 'translateY(20px)',
+                                    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s',
+                                }}
+                            >
                                 Analyze pollution patterns with real-time data from {ALL_STATIONS.length} stations
                             </p>
                         </div>
@@ -583,10 +614,17 @@ const TimestampPage = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 md:gap-8 mb-8 sm:mb-14">
-                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer">
+                    <div
+                        className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer"
+                        style={{
+                            opacity: headerVisible ? 1 : 0,
+                            transform: headerVisible ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.95)',
+                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s',
+                        }}
+                    >
                         <div className="flex items-center justify-between mb-2 sm:mb-4">
                             <span className="text-text-muted-light dark:text-text-muted text-xs sm:text-sm">Current AQI</span>
-                            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary-light-theme dark:text-primary" />
+                            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary-light-theme dark:text-primary animate-data-pulse" />
                         </div>
                         <p className="font-display text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2" style={{ color: getAqiColor(getAqiStatus(currentAqi)) }}>
                             <AnimatedNumber value={currentAqi} duration={1200} />
@@ -594,7 +632,14 @@ const TimestampPage = () => {
                         <p className="text-xs sm:text-sm text-text-muted-light dark:text-text-muted">{stationName}</p>
                     </div>
 
-                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer">
+                    <div
+                        className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer"
+                        style={{
+                            opacity: headerVisible ? 1 : 0,
+                            transform: headerVisible ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.95)',
+                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s',
+                        }}
+                    >
                         <div className="flex items-center justify-between mb-2 sm:mb-4">
                             <span className="text-text-muted-light dark:text-text-muted text-xs sm:text-sm">
                                 {timeRange === '24h' ? 'Today\'s Avg' : timeRange === '7d' ? '7-Day Avg' : timeRange === '30d' ? '30-Day Avg' : 'Period Avg'}
@@ -613,7 +658,14 @@ const TimestampPage = () => {
                         </p>
                     </div>
 
-                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer">
+                    <div
+                        className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer"
+                        style={{
+                            opacity: headerVisible ? 1 : 0,
+                            transform: headerVisible ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.95)',
+                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s',
+                        }}
+                    >
                         <span className="text-text-muted-light dark:text-text-muted block mb-2 sm:mb-4 text-xs sm:text-sm">Peak AQI</span>
                         <p className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-red-400 mb-1 sm:mb-2">
                             <AnimatedNumber value={stats.peakAqi} duration={1200} delay={200} />
@@ -623,7 +675,14 @@ const TimestampPage = () => {
                         </p>
                     </div>
 
-                    <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer">
+                    <div
+                        className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover-lift hover-border-glow transition-all duration-300 cursor-pointer"
+                        style={{
+                            opacity: headerVisible ? 1 : 0,
+                            transform: headerVisible ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.95)',
+                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s',
+                        }}
+                    >
                         <span className="text-text-muted-light dark:text-text-muted block mb-2 sm:mb-4 text-xs sm:text-sm">Min AQI</span>
                         <p className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-green-400 mb-1 sm:mb-2">
                             <AnimatedNumber value={stats.minAqi} duration={1200} delay={300} />
@@ -637,7 +696,14 @@ const TimestampPage = () => {
 
             {/* Station Comparison (when enabled) */}
             {showComparison && compareData.length > 0 && (
-                <div className="mb-10 sm:mb-16">
+                <div
+                    className="mb-10 sm:mb-16"
+                    style={{
+                        opacity: headerVisible ? 1 : 0,
+                        transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                        transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.5s',
+                    }}
+                >
                     <StationComparison
                         station1={{
                             name: stationName,
@@ -655,7 +721,14 @@ const TimestampPage = () => {
             )}
 
             {/* Main Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 mb-10 sm:mb-16">
+            <div
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 mb-10 sm:mb-16"
+                style={{
+                    opacity: headerVisible ? 1 : 0,
+                    transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                    transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.5s',
+                }}
+            >
                 <AQIChart
                     data={historicalData.length > 0 ? historicalData : [{ timestamp: new Date().toISOString(), aqi: currentAqi, pm25: pollutantData.pm25, pm10: pollutantData.pm10 }]}
                     type="line"
@@ -669,7 +742,14 @@ const TimestampPage = () => {
             </div>
 
             {/* Chart View Toggle Section */}
-            <div className="mb-10 sm:mb-16">
+            <div
+                className="mb-10 sm:mb-16"
+                style={{
+                    opacity: headerVisible ? 1 : 0,
+                    transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                    transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.6s',
+                }}
+            >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                     <div className="flex items-center gap-3 sm:gap-4">
                         <BarChart2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary-light-theme dark:text-indigo-400" />
@@ -790,29 +870,36 @@ const TimestampPage = () => {
             </div>
 
             {/* Analysis Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10">
-                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-5 sm:p-8 md:p-10">
+            <div
+                className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10"
+                style={{
+                    opacity: headerVisible ? 1 : 0,
+                    transform: headerVisible ? 'translateY(0)' : 'translateY(30px)',
+                    transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.7s',
+                }}
+            >
+                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-5 sm:p-8 md:p-10 hover-lift hover-border-glow transition-all duration-300">
                     <h3 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-text-dark dark:text-white">Key Insights</h3>
                     <ul className="space-y-4 sm:space-y-5 text-sm sm:text-base">
                         <li className="flex items-start gap-3 sm:gap-4">
-                            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-1.5 sm:mt-2 rounded-full bg-red-500 flex-shrink-0"></span>
+                            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-1.5 sm:mt-2 rounded-full bg-red-500 flex-shrink-0 animate-data-pulse"></span>
                             <span className="text-text-muted-light dark:text-gray-300">Peak pollution hours: <strong>8-11 AM</strong> and <strong>5-9 PM</strong> correlating with traffic rush hours</span>
                         </li>
                         <li className="flex items-start gap-3 sm:gap-4">
-                            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-1.5 sm:mt-2 rounded-full bg-green-500 flex-shrink-0"></span>
+                            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-1.5 sm:mt-2 rounded-full bg-green-500 flex-shrink-0 animate-data-pulse"></span>
                             <span className="text-text-muted-light dark:text-gray-300">Lowest AQI recorded during <strong>2-5 AM</strong> when traffic is minimal</span>
                         </li>
                         <li className="flex items-start gap-3 sm:gap-4">
-                            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-1.5 sm:mt-2 rounded-full bg-amber-500 flex-shrink-0"></span>
+                            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-1.5 sm:mt-2 rounded-full bg-amber-500 flex-shrink-0 animate-data-pulse"></span>
                             <span className="text-text-muted-light dark:text-gray-300">Weekend pollution <strong>15% lower</strong> than weekdays on average</span>
                         </li>
                         <li className="flex items-start gap-3 sm:gap-4">
-                            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-1.5 sm:mt-2 rounded-full bg-indigo-500 flex-shrink-0"></span>
+                            <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-1.5 sm:mt-2 rounded-full bg-indigo-500 flex-shrink-0 animate-data-pulse"></span>
                             <span className="text-text-muted-light dark:text-gray-300">Industrial zones (Mundka, Narela) consistently <strong>40% higher</strong> than residential areas</span>
                         </li>
                     </ul>
                 </div>
-                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-5 sm:p-8 md:p-10">
+                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-xl sm:rounded-2xl p-5 sm:p-8 md:p-10 hover-lift hover-border-glow transition-all duration-300">
                     <h3 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-text-dark dark:text-white">PranaMesh Impact</h3>
                     <div className="space-y-4 sm:space-y-6">
                         <div>
